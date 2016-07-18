@@ -6,13 +6,15 @@ from sqlalchemy.orm import sessionmaker
 from models import engine
 from models import Base
 from models import MainMenu, Group, Post, Tag
+
 """
-create - Create db
-init - initialize db
+   create - Create db
+    init - initialize data db
   """
 
 def create():
     Base.metadata.create_all(engine)
+    print 'Done.'
 
 
 def init():
@@ -20,34 +22,34 @@ def init():
     session = Session()
 
     menu = list()
-    menu.append( MainMenu(u'Events'))
-    menu.append( MainMenu(u'Schools'))
-    menu.append( MainMenu(u'News'))
+    menu.append( EventMenu(name = u'Events'))
+    menu.append( EventMenu(name = u'Schools'))
+    menu.append( EventMenu(name = u'News'))
     for i in menu:
         session.add(i)
 
     tag = list()
-    tag.append(Tag(u'Salsa'))
-    tag.append(Tag(u'Salsa on2'))
-    tag.append(Tag(u'Social'))
-    tag.append(Tag(u'Bachata'))
-    tag.append(Tag(u'Lesson'))
+    tag.append(Tag(tag = 'Salsa'))
+    tag.append(Tag(tag = u'Salsa on2'))
+    tag.append(Tag(tag = u'Social'))
+    tag.append(Tag(tag = u'Bachata'))
+    tag.append(Tag(tag = u'Lesson'))
     for i in tag:
         session.add(i)
 
-    post = Post(u'вечеринка!!!',u'static/1.jpg')
-    post.tags.append(tag[1])
-    post.tags.append(tag[2])
+    post = Post(content = u'вечеринка!!!', photo_path = u'static/1.jpg')
+    post.tags.append(tag = tag[1])
+    post.tags.append(tag = tag[2])
     #post.groups.append(group[0])
     session.add(post)
 
     group = list()
-    g = Group(u'2mambo', u'/2mamboproject')
+    g = Group(group = u'2mambo',url_vk = u'/2mamboproject')
     g.posts.append(post)
-    group.append(Group(u'Mambotime', u'/mambotime'))
-    group.append(Group(u'Salsa open', u'/salsaopenmsk'))
-    group.append(Group(u'Salsa-Jam', u'/salsa_jam'))
-    group.append(Group(u'Sierra Maestro',u'/sierra_maestra_moscow'))
+    group.append(Group(group = u'Mambotime', url_vk = u'/mambotime'))
+    group.append(Group(group = u'Salsa open', url_vk = u'/salsaopenmsk'))
+    group.append(Group(group = u'Salsa-Jam', url_vk = u'/salsa_jam'))
+    group.append(Group(group = u'Sierra Maestro',url_vk = u'/sierra_maestra_moscow'))
     group.append(g)
     for i in group:
         session.add(i)
