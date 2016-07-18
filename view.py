@@ -3,7 +3,6 @@
 import logging
 import config
 import telebot
-import util
 import json
 
 from telebot import types
@@ -12,8 +11,13 @@ from sqlalchemy.orm import sessionmaker
 from models import  engine
 from models import MainMenu, Group, Tag, Post
 
+DEBUG = True
+
+import sys
+sys.dont_write_bytecode = True
+
 logger = telebot.logger
-telebot.logger.setLevel(logging.INFO)
+telebot.logger.setLevel(logging.DEBUG)
 
 bot  = telebot.TeleBot(config.TOKEN)
 
@@ -85,11 +89,14 @@ def callback_data(call):
         
     if call.message:
         if call.data in GROUP_MENU.keys():
-            photo, post = session.query(Post.photo,Post.post).join(Group.posts). \
-                          filter(Group.group == call.data).one()
+            query = session.query(Post.photo, Post.post).join(Group.posts). \
+                          filter(Group.group == u'2mambo').order_by(Post.id)
+
+
+            #photo = open(photo_path, 'rb')
             
-            post_send(id = call.message.chat.id, txt = post, \
-                          photo = photo, buttons = ('back','next'))
+            #post_send(id = call.message.chat.id, txt = post, \
+            #              photo = photo, buttons = ('back','next'))
          
         elif call.data in ['back','next']:
             if call.data == 'back':
