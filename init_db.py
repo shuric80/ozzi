@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 from models import engine
 from models import Base
-from models import MainMenu, Group, Post, Tag
+from models import EventMenu, Group, Post, Tag
 
 """
    create - Create db
@@ -31,18 +31,19 @@ def init():
     for i in menu:
         session.add(i)
 
-    tag = list()
-    tag.append(Tag(tag = 'Salsa'))
-    tag.append(Tag(tag = u'Salsa on2'))
-    tag.append(Tag(tag = u'Social'))
-    tag.append(Tag(tag = u'Bachata'))
-    tag.append(Tag(tag = u'Lesson'))
-    for i in tag:
+    tags = list()
+    tags.append(Tag(tag = 'Salsa'))
+    tags.append(Tag(tag = u'Salsa on2'))
+    tags.append(Tag(tag = u'Social'))
+    tags.append(Tag(tag = u'Bachata'))
+    tags.append(Tag(tag = u'Lesson'))
+    for i in tags:
         session.add(i)
+    session.commit()
 
     post = Post(content = u'вечеринка!!!', photo_path = u'static/1.jpg')
-    post.tags.append(tag = tag[1])
-    post.tags.append(tag = tag[2])
+    post.tags.append(tags[1])
+    post.tags.append(tags[2])
     #post.groups.append(group[0])
     session.add(post)
 
@@ -56,8 +57,6 @@ def init():
     group.append(g)
     for i in group:
         session.add(i)
-
-
 
     session.commit()
 

@@ -1,5 +1,6 @@
 #-*- coding: utf-8  -*-
 
+
 import logging
 import config
 import telebot
@@ -9,16 +10,14 @@ from telebot import types
 from sqlalchemy.orm import sessionmaker
 
 from models import  engine
-from models import MainMenu, Group, Tag, Post
+from models import EventMenu, Group, Tag, Post
 
-<<<<<<< HEAD
-DEBUG = True
-
-import sys
-sys.dont_write_bytecode = True
-=======
 import db
->>>>>>> 1756014a4e76b1829546daf60d2271a2c2b0244c
+
+if config.DEBUG:
+    import sys
+    sys.dont_write_bytecode = True
+
 
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
@@ -88,23 +87,11 @@ def callback_data(call):
     """ callback button
        """ 
     if call.message:
-<<<<<<< HEAD
-        if call.data in GROUP_MENU.keys():
-            query = session.query(Post.photo, Post.post).join(Group.posts). \
-                          filter(Group.group == u'2mambo').order_by(Post.id)
-
-
-            #photo = open(photo_path, 'rb')
-            
-            #post_send(id = call.message.chat.id, txt = post, \
-            #              photo = photo, buttons = ('back','next'))
-=======
         if call.data in db.get_tags():
 
             post, photo = db.get_post_tag(call.data)
             post_send(id = call.message.chat.id, txt = post, \
                           photo = photo, buttons = ('back','next'))
->>>>>>> 1756014a4e76b1829546daf60d2271a2c2b0244c
          
         elif call.data in ['back','next']:
             if call.data == 'back':
