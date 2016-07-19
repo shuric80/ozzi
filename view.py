@@ -3,7 +3,7 @@
 import logging
 import config
 import telebot
-import util
+
 import json
 
 from telebot import types
@@ -14,31 +14,17 @@ from models import MainMenu, Group, Tag, Post
 
 import db
 
+from handlers import callback_handler
+from session import SessionBuffer
+
 logger = telebot.logger
-telebot.logger.setLevel(logging.INFO)
+telebot.logger.setLevel(logging.WARNING)
 
 bot  = telebot.TeleBot(config.TOKEN)
 callback_handler = dict()
 
+session = SessionBuffer()
 
-class Pagination:
-    def __init__(self):
-        self.cnt = 0
-
-    def reset(self):
-        self.cnt =0
-
-    def inc(self):
-        self.cnt += 1 if self.cnt <10 else 0
-
-    def dec(self):
-        self.cnt -= 1 if self.cnt > 0 else 0
-
-    @property
-    def cnt(self):
-        return self.cnt
-
-pagination = Pagination()  
 
 def post_send(id, txt, photo, buttons = None):
     """ Send post
@@ -61,7 +47,6 @@ def direct_keyboard():
     keyboard.add(*buttons)
     return keyboard
 
-
 @bot.message_handler(commands=['start','help'])
 def message_start_help(message):
     content = '*Это бот для агрегации новостей по теме социальных танцев, \
@@ -70,46 +55,42 @@ def message_start_help(message):
     bot.send_message(message.chat.id, content)
     
     
+@bot.message_handler(regexp='^next$|^back$|^cancel$')
+def custom_keyboard_event(message):
+    command = message.text
+    #tag  = session.cmd(id, command)
+    page = 0 
+    context ='context'# = db.getTagPost(tag, page)
+    photo = open('static/1.jpeg','rb')
+    post_send(id, context, photo)
+
+       
 @bot.message_handler(func=lambda message:True, content_types=['text'])
 def tags_menu(message):
+    print ('Tag')
     """  Main menu.  View all tags
       """
-    tags_menu = db.get_tags()
-    post_send(message.chat.id, 'Choose one tag.', buttons = tags_menu)
+    #direct_keyboard()
+    #photo = open('static/1.jpeg','rb')
+    #post_send(message.chat.id, 'Choose one tag.',photo, tags_menu)
 
 
-@bot.message_handler(regexp='^Next$|^Back$|^Main$')
-def custom_keyboard_event(message):
-    if message.text == 'Next':
-        pagination.inc()
-
-    elif message.text == 'Back':
-        pagination.dec()
-
-    elif message.text == 'Main':
-        pagination.reset()
-
-
-def test(call):
-    logging.info('callback')
-
-callback_handler['test'] = test
-
+def _error_hook(obj):
+    logging.error('Not found handler:%s' % obj )
     
-@bot.callback_query_handler(func=lambda call:True)
+@bot.callback_query_handler(func = lambda call:True)
 def callback_data(call):
     """ callback function buttons
        """ 
     if call.message:
-        if call.data in db.get_tags():
-            page = pagination.cnt
-            post, photo = db.get_post_tag(call.data)
-            post_send(id = call.message.chat.id, txt = post, \
-                          photo = photo)
-            
+        if call.data in db.getTags():
+            #session.add(call.message.chat.id, tag, 0)
+            #post, photo = db.get_post_tag(call.data, 0)
+            post = 'post'
+            photo = open('static/1.jpeg','rb')
         elif call.message in callback_handler.keys():
            f_handler = call.message
-           callback_handler[f_handler](call)
+           callback_handler.get(f_handler, _error_hook)(call)
 
 
 if __name__ =='__main__':

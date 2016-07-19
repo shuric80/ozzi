@@ -9,9 +9,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 
 import config
-if config.DEBUG:
-    import sys
-    sys.dont_write_bytecode = True
+
 
 engine = create_engine('sqlite:///telegram_bot.db', echo=False)
 Base = declarative_base()
