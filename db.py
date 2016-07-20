@@ -21,16 +21,36 @@ def getMainEvents():
 
 def getTags():
 
-    tags = [q[0] for q in session.query(Tag.tag).all()]
-    logging.debug(tags)
-    return tags
+    tags =  session.query(Tag.tag).all()
+    session.close()
+    ret= list()
+
+    for i in tags:
+       ret.append( i[0])
+
+    return ret
 
 
-def getTagPost(tag, page = 0):
+def getContent( tag, page):
 
-    query_post = session.query(Post).join(Post.tags). \
-                 filter(Tag.tag == tag).order_by(Post.tstamp).all()
+    query_post = session.query(
+                 Post.photo_path, Post.content).join(Post.tags). \
+                 filter(Tag.tag == tag). \
+                 order_by(Post.tstamp). \
+                 all()
 
-    print query_post    
-    #return query_post.content #, query_post.photo_path
-    
+    session.close()
+
+    try:
+        ret = query_post[page]
+    except IndexError, e:
+        logging.error(e)
+        ret = None
+
+    return ret
+
+
+
+
+
+

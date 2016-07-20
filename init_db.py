@@ -2,6 +2,7 @@
 import sys
 sys.dont_write_bytecode = True
 
+
 import sys
 
 from sqlalchemy.orm import sessionmaker
@@ -14,6 +15,7 @@ from models import EventMenu, Group, Post, Tag
    create - Create db
     init - initialize data db
   """
+
 
 def create():
     Base.metadata.create_all(engine)
@@ -41,10 +43,14 @@ def init():
         session.add(i)
     session.commit()
 
-    post = Post(content = u'вечеринка!!!', photo_path = u'static/1.jpg')
-    post.tags.append(tags[1])
+    post = Post(content = u'вечеринка!!!', photo_path = u'static/1.jpeg')
+    post.tags.append(tags[0])
     post.tags.append(tags[2])
     #post.groups.append(group[0])
+    session.add(post)
+
+    post = Post(content = u'afasdfadsf',photo_path = u'static/2.jpeg')
+    post.tags.append(tags[0])
     session.add(post)
 
     group = list()
@@ -67,11 +73,11 @@ if  __name__ == '__main__':
                   command line = /'create/' or /'init/'
 
                  """
- 
+
     elif sys.argv[1] == 'create':
         create()
 
     elif sys.argv[1] == 'init':
         init()
-        
-    sys.exit(0)    
+
+    sys.exit(0)
