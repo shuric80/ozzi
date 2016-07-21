@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import urllib2
+import urllib
 import ast
 import re
 import sys
@@ -20,22 +21,46 @@ def request_posts(domain):
     body = response.read()
     return body
 
-def read_content(url_address):
-    ret = request_posts(url_address)
-    dict_posts = ast.literal_eval(ret)['response']['items']
+def downloadPhoto(photo):
+    photo_url = photo.replace('\\/','/')
+    photo_name = photo.split('/')[-1]
+    urllib.urlretrieve(photo_url, 'static/%s' % photo_name)
+    return photo_name
 
+
+def read_content(group):
+    url = group['url']
+    ret = request_posts(url)
+    dict_posts = ast.literal_eval(ret)['response']['items']
+    l_output = list()
     for post in dict_posts:
         text = post.get('text', None)
         attachments = post.get('attachments')
-        photos = list()
         date = post['date']
-        if type(attachments) == list:
-            for photo in attachments:
-                photos.append(photo.get('photo', None))
-        else:
-            print 'Warning.'
 
-    return dict(text=text, photos=photos, date=date)
+        if type(attachments) == list:
+            ext_photo = attachments[0].get('photo',None)
+            if ext_photo:
+                photo = ext_photo.get('photo_130', None)
+
+        else:
+            photo = None
+
+        if photo:
+            photo_path = downloadPhoto(photo)
+
+        l_output.append( dict(text=text, photo=photo,
+                                date=date, group=group['name']))
+
+    return l_output
+
+
+def updateDB():
+    pass
+
+
+
+
 
 if __name__ == '__main__':
    if len(sys.argv) == 2:
