@@ -18,6 +18,10 @@ def getMainEvents():
     logging.debug(menu)
     return menu
 
+def getTagsObject():
+    obj_tags = session.query(Tag).all()
+    session.close()
+    return obj_tags
 
 def getTags():
 
@@ -26,7 +30,7 @@ def getTags():
     ret= list()
 
     for i in tags:
-       ret.append( i[0])
+        ret.append( i[0])
 
     return ret
 
@@ -34,23 +38,47 @@ def getTags():
 def getContent( tag, page):
 
     query_post = session.query(
-                 Post.photo_path, Post.content).join(Post.tags). \
-                 filter(Tag.tag == tag). \
-                 order_by(Post.tstamp). \
-                 all()
+        Post.photo_path, Post.content).join(Post.tags). \
+        filter(Tag.tag == tag). \
+        order_by(Post.tstamp). \
+        all()
 
     session.close()
 
     try:
         ret = query_post[page]
+
     except IndexError, e:
         logging.error(e)
         ret = None
 
     return ret
 
+def addContent(d_input):
+    """
+    Add post in DB
+    """
+    posts = list()
+
+    for row in d_input:
+        post  = Post(
+            content = row['text'],
+            photo_path = row['photo'],
+            date=row['date'],
+            group = row['group'])
+
+        for tag in row['tags']:
+            post.tags.append(tag)
+
+            session.add(post)
+
+        session.commit()
+        session.close()
 
 
 
-
-
+def  getAllGroups():
+    """ return list all groups   {'name':'8888','url':'***'}
+      """
+    q = session.query(Group).all()
+    return q
