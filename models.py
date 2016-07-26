@@ -19,12 +19,13 @@ association_table = Table( 'association', Base.metadata,
                            Column( 'post_id', Integer,ForeignKey('post.id'))
 )
 
-class EventMenu(Base):
+class MainButton(Base):
 
-    __tablename__ = 'main'
+    __tablename__ = 'button'
 
     id = Column( Integer, primary_key=True)
-    name = Column( Unicode(20), nullable=False)
+    label = Column( Unicode(50), nullable=False, unique=True)
+
 
 
 class Group(Base):
@@ -43,7 +44,9 @@ class Tag(Base):
     __tablename__ = 'tag'
 
     id = Column( Integer, primary_key=True)
-    tag = Column( Unicode(30))
+    title = Column(Unicode(20), unique =True, nullable=False)
+    synonyms = Column( Unicode(300))
+
 
 
 class Post(Base):

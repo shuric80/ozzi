@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 
 from models import engine
 from models import Base
-from models import EventMenu, Group, Post, Tag
+from models import MainButton, Group, Post, Tag
 
 """
    create - Create db
@@ -27,27 +27,18 @@ def init():
     session = Session()
 
     menu = list()
-    menu.append( EventMenu(name = u'Events'))
-    menu.append( EventMenu(name = u'Schools'))
-    menu.append( EventMenu(name = u'News'))
+    menu.append( MainButton(label = u'Tags'))
+    menu.append( MainButton(label = u'Groups'))
+    menu.append( MainButton(label = u'Last'))
     for i in menu:
         session.add(i)
 
     tags = list()
-    tags.append(Tag(tag = u'Salsa'))
-    tags.append(Tag(tag = u'Salsa on2'))
-    tags.append(Tag(tag = u'Social'))
-    tags.append(Tag(tag = u'Bachata'))
-    tags.append(Tag(tag = u'Lesson'))
-    tags.append(Tag(tag = u'вечеринка'))
-    tags.append(Tag(tag = u'урок'))
-    tags.append(Tag(tag = u'расписание'))
-    tags.append(Tag(tag = u'соколов'))
-    tags.append(Tag(tag = u'танцы'))
-    tags.append(Tag(tag = u'сальса'))
-    tags.append(Tag(tag = u'бачата'))
-    tags.append(Tag(tag = u'кизомба'))
-    tags.append(Tag(tag = u'mambotime'))
+    tags.append(Tag(title = u'Salsa', synonyms = u'сальса, кубано, кубинская, афро, румба, касино'))
+    tags.append(Tag(title = u'Mambo', synonyms = u'линейка, мамбо, salsa on2, NY '))
+    tags.append(Tag(title = u'Social', synonyms = u'social, вечеринка, соушел'))
+    tags.append(Tag(title = u'Lesson', synonyms = u'урок, мастер класс, семинар'))
+    tags.append(Tag(title = u'XXX', synonyms = u'бачата, кизомба, bachata, kizomba'))
 
 
 

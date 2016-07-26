@@ -2,7 +2,7 @@
 import logging
 from sqlalchemy.orm import sessionmaker
 from models import engine
-from models import Post, EventMenu, Tag, Group
+from models import Post, MainButton, Tag, Group
 
 from view import logger
 import config
@@ -12,47 +12,53 @@ Session = sessionmaker(bind = engine)
 session = Session()
 
 
-def getMainEvents():
+def getMainButton():
+    """ get all event. Main menu
 
-    menu = [q[0] for q in session.query(EventMenu.name).all()]
-    logging.debug(menu)
-    return menu
+       """
+    q = session.query(MainButton).all()
+    session.close()
+
+    return q
+
 
 def getTagsObject():
     obj_tags = session.query(Tag).all()
     session.close()
+
     return obj_tags
 
-def getTags():
 
-    tags =  session.query(Tag.tag).all()
+def getTagsIdTag():
+
+    q =  session.query(Tag.id, Tag.tag).all()
     session.close()
-    ret= list()
+    l_output = list()
 
-    for i in tags:
-        ret.append( i[0])
+    for i in q:
+        l_output.append(dict(id = i[0], tag = i[1].encode('utf8')))
 
-    return ret
+    return l_output
 
 
-def getContent( tag, page):
+def getContent( d_input):
+    page = d_input['cnt_page']
+    tag = d_input.get('tag', None)
+    group = d_input.get('group', None)
 
-    query_post = session.query(
-        Post.photo_path, Post.content).join(Post.tags). \
-        filter(Tag.tag == tag). \
-        order_by(Post.tstamp). \
-        all()
+    if tag:
+        obj = session.query(
+            Post.content, Post.photo_path).join(Post.tags). \
+            filter(Tag.title == tag).order_by(Post.date).get(page)
+
+    elif group:
+        obj = session.query(
+            Post.content, Post.photo_path).join(
+                Post.group).filter(Group.name == group).order_by(Post.date).get(page)
 
     session.close()
 
-    try:
-        ret = query_post[page]
-
-    except IndexError, e:
-        logging.error(e)
-        ret = None
-
-    return ret
+    return obj
 
 def addContent(d_input):
     """

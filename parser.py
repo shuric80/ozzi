@@ -20,7 +20,7 @@ sys.setdefaultencoding('utf-8')
     Use public API http://vk.com
    """
 
-CNT  = 10
+CNT  = 1
 
 def request_posts(domain):
     url = 'https://api.vk.com/method/wall.get?domain=' + \
@@ -46,16 +46,24 @@ def setTags(text):
 
     term_exctractor = TermExtractor()
     words_key = list()
+
     for term in term_exctractor(text):
         words_key.append(term.normalized.encode('utf8'))
 
     l_output = list()
     db_tags = db.getTagsObject()
 
-    for i  in  db_tags:
-        if i.tag in words_key:
-            l_output.append(i)
+    for l_tags  in  db_tags:
 
+        synonyms_tag = [ i.strip for i in l_tags.synonyms.split(',')]
+        print synonyms_tag
+
+        for tag in synonyms_tag:
+            if tag in words_key:
+                l_output.append(l_tags)
+
+    print 'TAG'
+    print l_output
     return l_output
 
 
