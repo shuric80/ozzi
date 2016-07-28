@@ -20,7 +20,7 @@ sys.setdefaultencoding('utf-8')
     Use public API http://vk.com
    """
 
-CNT  = 1
+CNT  = 10
 
 def request_posts(domain):
     url = 'https://api.vk.com/method/wall.get?domain=' + \
@@ -55,15 +55,13 @@ def setTags(text):
 
     for l_tags  in  db_tags:
 
-        synonyms_tag = [ i.strip for i in l_tags.synonyms.split(',')]
-        print synonyms_tag
+
+        synonyms_tag = [ i.strip() for i in l_tags.synonyms.split(',')]
 
         for tag in synonyms_tag:
             if tag in words_key:
                 l_output.append(l_tags)
 
-    print 'TAG'
-    print l_output
     return l_output
 
 
@@ -83,7 +81,7 @@ def getPostsFromWallGroup(group):
         if type(attachments) == list:
             ext_photo = attachments[0].get('photo',None)
             if ext_photo:
-                photo_url = ext_photo.get('photo_130', None).decode('utf8')
+                photo_url = ext_photo.get('photo_604', None).decode('utf8')
 
         else:
             photo_url = None
@@ -109,6 +107,7 @@ def updateDB():
         data = getPostsFromWallGroup(i)
         db.addContent(data)
 
+        
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

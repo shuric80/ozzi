@@ -12,58 +12,40 @@ Session = sessionmaker(bind = engine)
 session = Session()
 
 
-def getMainButton():
-    """ get all event. Main menu
-
-       """
-    q = session.query(MainButton).all()
-    session.close()
-
-    return q
-
-
-def getTagsObject():
-    obj_tags = session.query(Tag).all()
-    session.close()
-
-    return obj_tags
-
-
-def getTagsIdTag():
-
-    q =  session.query(Tag.id, Tag.tag).all()
-    session.close()
-    l_output = list()
-
-    for i in q:
-        l_output.append(dict(id = i[0], tag = i[1].encode('utf8')))
-
-    return l_output
-
-
 def getContent( d_input):
+    """
+    return post.
+    d_input ={ 'group':'***','page':0, 'tag':'***'}
+     """
     page = d_input['cnt_page']
-    tag = d_input.get('tag', None)
-    group = d_input.get('group', None)
+    id_tag = d_input.get('id_tag', None)
+    sgroup = d_input.get('group', None)
 
-    if tag:
-        obj = session.query(
-            Post.content, Post.photo_path).join(Post.tags). \
-            filter(Tag.title == tag).order_by(Post.date).get(page)
+    if sgroup:
+        try:
+            ret = session.query(Post).join(Post.group).filter(Group.name == sgroup).order_by(~Post.date)[page]
+        except IndexError:
+            ret = None
 
-    elif group:
-        obj = session.query(
-            Post.content, Post.photo_path).join(
-                Post.group).filter(Group.name == group).order_by(Post.date).get(page)
+    elif id_tag:
+        tag = session.query(Tag.title).filter_by(id = id_tag).one()[0]
+        try:
+           ret = session.query(Post).join(Post.tags).filter(Tag.title == tag).order_by(~Post.date)[page]
+        except IndexError:
+           ret = None
+    else:
+        ret = None
 
     session.close()
+    return ret
 
-    return obj
 
+
+    
 def addContent(d_input):
     """
     Add post in DB
-    """
+      """
     posts = list()
 
     for row in d_input:
@@ -87,4 +69,17 @@ def  getAllGroups():
     """ return list all groups   {'name':'8888','url':'***'}
       """
     q = session.query(Group).all()
+    return q
+
+
+def getTagsButton():
+    q = session.query(Tag).all()
+    return q
+
+def getGroupsButton():
+    q = session.query(Group).all()
+    return q
+
+def getMainButton():
+    q = session.query(MainButton).all()
     return q

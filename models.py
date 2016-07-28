@@ -24,7 +24,7 @@ class MainButton(Base):
     __tablename__ = 'button'
 
     id = Column( Integer, primary_key=True)
-    label = Column( Unicode(50), nullable=False, unique=True)
+    title = Column( Unicode(50), nullable=False, unique=True)
 
 
 

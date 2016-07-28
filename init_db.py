@@ -27,15 +27,15 @@ def init():
     session = Session()
 
     menu = list()
-    menu.append( MainButton(label = u'Tags'))
-    menu.append( MainButton(label = u'Groups'))
-    menu.append( MainButton(label = u'Last'))
+    menu.append( MainButton(title = u'Tags'))
+    menu.append( MainButton(title = u'Groups'))
+    menu.append( MainButton(title = u'Last'))
     for i in menu:
         session.add(i)
 
     tags = list()
-    tags.append(Tag(title = u'Salsa', synonyms = u'сальса, кубано, кубинская, афро, румба, касино'))
-    tags.append(Tag(title = u'Mambo', synonyms = u'линейка, мамбо, salsa on2, NY '))
+    tags.append(Tag(title = u'Salsa', synonyms = u'сальса, кубано, salsa, кубинская, афро, румба, касино'))
+    tags.append(Tag(title = u'Mambo', synonyms = u'линейка, мамбо, on2, NY '))
     tags.append(Tag(title = u'Social', synonyms = u'social, вечеринка, соушел'))
     tags.append(Tag(title = u'Lesson', synonyms = u'урок, мастер класс, семинар'))
     tags.append(Tag(title = u'XXX', synonyms = u'бачата, кизомба, bachata, kizomba'))
@@ -44,7 +44,8 @@ def init():
 
     for i in tags:
         session.add(i)
-        session.commit()
+
+    session.commit()
 
     #post = Post(content = u'вечеринка!!!', photo_path = u'static/1.jpeg')
     #post.tags.append(tags[0])
