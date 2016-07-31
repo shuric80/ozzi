@@ -19,32 +19,32 @@ association_table = Table( 'association', Base.metadata,
                            Column( 'post_id', Integer,ForeignKey('post.id'))
 )
 
-class MainButton(Base):
+class Button:
 
-    __tablename__ = 'button'
 
+    label = Column( Unicode(50), nullable=False, unique=True)
+    handler = Column(Unicode(50), nullable=False, unique=True)
+
+
+
+class MainMenu(Button,Base):
+
+    __tablename__ = 'main'
     id = Column( Integer, primary_key=True)
-    title = Column( Unicode(50), nullable=False, unique=True)
 
 
-
-class Group(Base):
+class Group(Button,Base):
 
     __tablename__ = 'group'
-
     id = Column( Integer, primary_key=True)
-    name = Column( Unicode(30), nullable=False, unique=True)
     vk_url = Column( Unicode(100), nullable=True, unique=True)
-
     posts = relationship('Post', backref="group")
 
 
-class Tag(Base):
+class Tag(Button,Base):
 
     __tablename__ = 'tag'
-
     id = Column( Integer, primary_key=True)
-    title = Column(Unicode(20), unique =True, nullable=False)
     synonyms = Column( Unicode(300))
 
 

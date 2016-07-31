@@ -12,10 +12,13 @@ from rutermextract import TermExtractor
 import db
 
 import logging
-#logging.basicConfig(logging.setLevel = logging.DEBUG)
+from view import logger
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+logger.debug("Run parser module")
+
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
+
 """ Request and parsing posts for wall groups.
     Use public API http://vk.com
    """
@@ -28,6 +31,7 @@ def request_posts(domain):
     response = urllib2.urlopen(url)
     body = response.read()
     return body
+
 
 def downloadPhoto(photo):
     """
@@ -55,12 +59,12 @@ def setTags(text):
 
     for l_tags  in  db_tags:
 
-
         synonyms_tag = [ i.strip() for i in l_tags.synonyms.split(',')]
 
         for tag in synonyms_tag:
             if tag in words_key:
                 l_output.append(l_tags)
+
 
     return l_output
 
@@ -75,6 +79,7 @@ def getPostsFromWallGroup(group):
     l_output = list()
     for post in dict_posts:
         text = post.get('text', None).decode('utf8')
+
         attachments = post.get('attachments')
         date = post['date']
 
@@ -88,9 +93,9 @@ def getPostsFromWallGroup(group):
 
         if photo_url:
             photo = downloadPhoto(photo_url)
-            logging.debug('Photo download:%s' % photo_url)
 
-        tags = setTags(text)
+        #tags = setTags(text)
+        tags = []
 
         l_output.append( dict(text=text,tags=tags, photo=photo,
                               date=date, group=group))
@@ -101,13 +106,13 @@ def getPostsFromWallGroup(group):
 
 
 def updateDB():
-    groups = db.getAllGroups()
+    groups = db.groupMenu()
 
     for i in groups:
         data = getPostsFromWallGroup(i)
         db.addContent(data)
 
-        
+
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

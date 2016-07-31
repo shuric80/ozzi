@@ -2,7 +2,7 @@
 import logging
 from sqlalchemy.orm import sessionmaker
 from models import engine
-from models import Post, MainButton, Tag, Group
+from models import Post, MainMenu, Tag, Group
 
 from view import logger
 import config
@@ -23,16 +23,20 @@ def getContent( d_input):
 
     if sgroup:
         try:
-            ret = session.query(Post).join(Post.group).filter(Group.name == sgroup).order_by(~Post.date)[page]
+            ret = session.query(Post).join(Post.group).filter(
+                Group.name ==sgroup).order_by(~Post.date)[page]
+
         except IndexError:
             ret = None
 
     elif id_tag:
         tag = session.query(Tag.title).filter_by(id = id_tag).one()[0]
         try:
-           ret = session.query(Post).join(Post.tags).filter(Tag.title == tag).order_by(~Post.date)[page]
+            ret = session.query(Post).join(Post.tags).filter(Tag.title == tag).order_by(~Post.date)[page]
+
         except IndexError:
-           ret = None
+            ret = None
+
     else:
         ret = None
 
@@ -40,8 +44,6 @@ def getContent( d_input):
     return ret
 
 
-
-    
 def addContent(d_input):
     """
     Add post in DB
@@ -55,31 +57,35 @@ def addContent(d_input):
             date=row['date'],
             group = row['group'])
 
-        for tag in row['tags']:
-            post.tags.append(tag)
+        #for tag in row['tags']:
+        #    post.tags.append(tag)
 
-            session.add(post)
+        session.add(post)
 
-        session.commit()
-        session.close()
+    session.commit()
+    session.close()
 
 
 
-def  getAllGroups():
-    """ return list all groups   {'name':'8888','url':'***'}
-      """
+def groupMenu():
     q = session.query(Group).all()
+    session.close()
     return q
 
 
-def getTagsButton():
+def tagMenu():
     q = session.query(Tag).all()
+    session.close()
     return q
 
-def getGroupsButton():
-    q = session.query(Group).all()
+
+def eventMenu():
+    q = session.query(Event).all()
+    session.close()
     return q
 
-def getMainButton():
-    q = session.query(MainButton).all()
+
+def mainMenu():
+    q = session.query(MainMenu).all()
+    session.close()
     return q

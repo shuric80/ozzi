@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 
 from models import engine
 from models import Base
-from models import MainButton, Group, Post, Tag
+from models import MainMenu, Group, Post, Tag
 
 """
    create - Create db
@@ -27,18 +27,19 @@ def init():
     session = Session()
 
     menu = list()
-    menu.append( MainButton(title = u'Tags'))
-    menu.append( MainButton(title = u'Groups'))
-    menu.append( MainButton(title = u'Last'))
+    menu.append( MainMenu(label = u'Tags', handler = u'TAG'))
+    menu.append( MainMenu(label = u'Groups', handler = u'GROUP'))
+    menu.append( MainMenu(label = u'Event', handler = u'EVENT'))
+
     for i in menu:
         session.add(i)
 
     tags = list()
-    tags.append(Tag(title = u'Salsa', synonyms = u'сальса, кубано, salsa, кубинская, афро, румба, касино'))
-    tags.append(Tag(title = u'Mambo', synonyms = u'линейка, мамбо, on2, NY '))
-    tags.append(Tag(title = u'Social', synonyms = u'social, вечеринка, соушел'))
-    tags.append(Tag(title = u'Lesson', synonyms = u'урок, мастер класс, семинар'))
-    tags.append(Tag(title = u'XXX', synonyms = u'бачата, кизомба, bachata, kizomba'))
+    tags.append(Tag(label = u'Salsa', handler =u'SALSA'))
+    tags.append(Tag(label = u'Mambo', handler = u'MAMBO'))
+    tags.append(Tag(label = u'Social', handler = u'SOCIAL'))
+    tags.append(Tag(label = u'Lesson', handler = u'LESSON'))
+    tags.append(Tag(label = u'XXX', handler = u'XXX'))
 
 
 
@@ -58,13 +59,12 @@ def init():
     #session.add(post)
 
     group = list()
-    g = Group(name = u'2mambo',vk_url = u'2mamboproject')
-    #g.posts.append(post)
-    group.append(Group(name = u'Mambotime', vk_url = u'mambotime'))
-    group.append(Group(name = u'Salsa open', vk_url = u'salsaopenmsk'))
-    group.append(Group(name = u'Salsa-Jam', vk_url = u'salsa_jam'))
-    group.append(Group(name = u'Sierra Maestro',vk_url = u'sierra_maestra_moscow'))
-    group.append(g)
+    group.append(Group(label = u'2mambo', handler = u'2MAMBO',vk_url = u'2mamboproject'))
+    group.append(Group(label = u'Mambotime', handler=u'MAMBOTIME', vk_url = u'mambotime'))
+    group.append(Group(label = u'Salsa open', handler=u'SALSAOPEN', vk_url = u'salsaopenmsk'))
+    group.append(Group(label = u'Salsa-Jam', handler=u'SALSAJEM',vk_url = u'salsa_jam'))
+    group.append(Group(label = u'Sierra Maestro', handler=u'SIERRAMAESTRO',vk_url = u'sierra_maestra_moscow'))
+
     for i in group:
         session.add(i)
 
