@@ -39,7 +39,11 @@ def downloadPhoto(photo):
        """
     photo_url = photo.replace('\\/','/')
     photo_name = photo.split('/')[-1]
-    urllib.urlretrieve(photo_url, 'static/%s' % photo_name)
+    try:
+        urllib.urlretrieve(photo_url, 'static/%s' % photo_name)
+    except IOError, e:
+        logger.error('%s' % e)
+        
     return photo_name
 
 
@@ -86,13 +90,13 @@ def getPostsFromWallGroup(group):
         if type(attachments) == list:
             ext_photo = attachments[0].get('photo',None)
             if ext_photo:
-                photo_url = ext_photo.get('photo_604', None).decode('utf8')
+                photo = ext_photo.get('photo_604', None).decode('utf8')
 
         else:
-            photo_url = None
+            photo = None
 
-        if photo_url:
-            photo = downloadPhoto(photo_url)
+        if photo:
+            photo = downloadPhoto(photo)
 
         #tags = setTags(text)
         tags = []

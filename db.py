@@ -6,42 +6,35 @@ from models import Post, MainMenu, Tag, Group
 
 from view import logger
 import config
+import transaction
 
+logger.info('Run DB module.')
 
 Session = sessionmaker(bind = engine)
 session = Session()
 
 
-def getContent( d_input):
+def readGroup(group, page):
     """
     return post.
     d_input ={ 'group':'***','page':0, 'tag':'***'}
-     """
-    page = d_input['cnt_page']
-    id_tag = d_input.get('id_tag', None)
-    sgroup = d_input.get('group', None)
 
-    if sgroup:
-        try:
-            ret = session.query(Post).join(Post.group).filter(
-                Group.name ==sgroup).order_by(~Post.date)[page]
+    """
+    logger.debug('READ GROUP:%s \t PAGE:%s' % (group, page))
+    with transaction.manager:
+        result = session.query(Post).join(Post.group).filter(
+            Group.label == group.lower()).order_by(~Post.date)
 
-        except IndexError:
-            ret = None
 
-    elif id_tag:
-        tag = session.query(Tag.title).filter_by(id = id_tag).one()[0]
-        try:
-            ret = session.query(Post).join(Post.tags).filter(Tag.title == tag).order_by(~Post.date)[page]
+    return result[page] if page < result.count() else None
 
-        except IndexError:
-            ret = None
 
-    else:
-        ret = None
+def readTag(tag, page):
+    #tag = session.query(Tag.title).filter_by(id = tag).one()[0]
+    #ret = session.query(Post).join(Post.tags).filter(Tag.title == tag).order_by(~Post.date)[page]
+    #session.close()
+    return None
 
-    session.close()
-    return ret
 
 
 def addContent(d_input):
@@ -49,18 +42,19 @@ def addContent(d_input):
     Add post in DB
       """
     posts = list()
+    with transaction.manager:
 
-    for row in d_input:
-        post  = Post(
-            content = row['text'],
-            photo_path = row['photo'],
-            date=row['date'],
-            group = row['group'])
+        for row in d_input:
+            post  = Post(
+                content = row['text'],
+                photo = row['photo'],
+                date = row['date'],
+                group = row['group'])
 
         #for tag in row['tags']:
         #    post.tags.append(tag)
 
-        session.add(post)
+            session.add(post)
 
     session.commit()
     session.close()
@@ -68,24 +62,33 @@ def addContent(d_input):
 
 
 def groupMenu():
-    q = session.query(Group).all()
+    with transaction.manager:
+        q = session.query(Group).all()
+
     session.close()
     return q
 
 
 def tagMenu():
-    q = session.query(Tag).all()
+    with transaction.manager:
+        q = session.query(Tag).all()
+
+
     session.close()
     return q
 
 
 def eventMenu():
-    q = session.query(Event).all()
-    session.close()
+    with transaction.manager:
+        q = session.query(Event).all()
+
+    sesson.close()
     return q
 
 
 def mainMenu():
-    q = session.query(MainMenu).all()
+    with transaction.manager:
+        q = session.query(MainMenu).all()
+
     session.close()
     return q

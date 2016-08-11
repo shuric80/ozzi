@@ -20,11 +20,8 @@ association_table = Table( 'association', Base.metadata,
 )
 
 class Button:
-
-
     label = Column( Unicode(50), nullable=False, unique=True)
     handler = Column(Unicode(50), nullable=False, unique=True)
-
 
 
 class MainMenu(Button,Base):
@@ -48,7 +45,6 @@ class Tag(Button,Base):
     synonyms = Column( Unicode(300))
 
 
-
 class Post(Base):
 
     __tablename__ = 'post'
@@ -56,7 +52,7 @@ class Post(Base):
     id  = Column( Integer, primary_key = True)
     tstamp = Column( Date, default = datetime.utcnow)
     content = Column( 'Content', Unicode(4000))
-    photo_path = Column( 'Photo', Unicode(50), nullable = True)
+    photo = Column( 'Photo', Unicode(50), nullable = True)
     group_id =  Column( Integer, ForeignKey('group.id'))
     date = Column(Integer, nullable=False)
 
