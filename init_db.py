@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from models import engine
 from models import Base
 from models import EventMenu, Group, Post, Tag
+from db import update_db
 
 """
    create - Create db
@@ -39,10 +40,10 @@ def init():
     tags.append(Tag(tag = u'Lesson'))
     for i in tags:
         session.add(i)
-    session.commit()
-    
+        session.commit()
+
     group = list()
-    group.append(Group(group = u'2mambo', url_vk = u'2mambo'))
+    group.append(Group(group = u'2mambo', url_vk = u'2mamboproject'))
     group.append(Group(group = u'Mambotime', url_vk = u'mambotime'))
     group.append(Group(group = u'Salsa open', url_vk = u'salsaopenmsk'))
     group.append(Group(group = u'Salsa-Jam', url_vk = u'salsa_jam'))
@@ -52,24 +53,29 @@ def init():
 
     session.commit()
 
-    post = Post(content='hello world!', created_at=0, photo='')
-    post.group = group[1]
 
-    session.add(post)
-    session.commit()
+def update():
+    update_db()
 
 
 if  __name__ == '__main__':
-    if len(sys.argv) == 1:
-        print """ Databases.
-                  command line = /'create/' or /'init/'
+    if len(sys.argv)==1:
+        create()
+        init()
+        update()
+        sys.stdout.write('Done.')
 
-                 """
- 
+
     elif sys.argv[1] == 'create':
         create()
 
     elif sys.argv[1] == 'init':
         init()
-        
-    sys.exit(0)    
+
+    elif sys.argv[1] == 'update':
+        update()
+
+    else:
+        pass
+
+    sys.exit(0)
