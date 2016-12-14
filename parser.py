@@ -1,124 +1,67 @@
 # !/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import urllib2
-import urllib
+import requests
 import ast
 import re
 import sys
-
-from rutermextract import TermExtractor
-
-import db
-
-import logging
-from view import logger
-
-logger.debug("Run parser module")
-
-#reload(sys)
-#sys.setdefaultencoding('utf-8')
-
+reload(sys)
+sys.setdefaultencoding('utf-8')
 """ Request and parsing posts for wall groups.
     Use public API http://vk.com
    """
 
+import json
+
 CNT  = 10
 
+URL = 'https://api.vk.com/method/wall.get'
+
 def request_posts(domain):
-    url = 'https://api.vk.com/method/wall.get?domain=' + \
-          domain+'&count=%d&v=5.3' % CNT
-    response = urllib2.urlopen(url)
-    body = response.read()
-    return body
+    params = dict(domain=domain, v=5.3, count=CNT)
+    res = requests.get(URL, params=params)
+    return res.text
 
 
-def downloadPhoto(photo):
-    """
-    Download and save photo.
-       """
-    photo_url = photo.replace('\\/','/')
-    photo_name = photo.split('/')[-1]
+def read_content(url_address):
+    l_ret = list()
+    ret = request_posts(url_address)
     try:
-        urllib.urlretrieve(photo_url, 'static/%s' % photo_name)
-    except IOError, e:
-        logger.error('%s' % e)
-        
-    return photo_name
+        posts = json.loads(ret)['response']['items']
 
+    except KeyError:
+        print url_address
+        raise ValueError('test')
 
-def setTags(text):
-    """
-    find word and select tag.
-       """
-
-    term_exctractor = TermExtractor()
-    words_key = list()
-
-    for term in term_exctractor(text):
-        words_key.append(term.normalized.encode('utf8'))
-
-    l_output = list()
-    db_tags = db.getTagsObject()
-
-    for l_tags  in  db_tags:
-
-        synonyms_tag = [ i.strip() for i in l_tags.synonyms.split(',')]
-
-        for tag in synonyms_tag:
-            if tag in words_key:
-                l_output.append(l_tags)
-
-
-    return l_output
-
-
-def getPostsFromWallGroup(group):
-    """
-    Get posts
-    """
-    url = group.vk_url
-    ret = request_posts(url)
-    dict_posts = ast.literal_eval(ret)['response']['items']
-    l_output = list()
-    for post in dict_posts:
-        text = post.get('text', None).decode('utf8')
-
+    for post in posts:
+        text = post.get('text', None)
         attachments = post.get('attachments')
         date = post['date']
+        if not attachments:
+           l_ret.append(dict(text=text, date=date))
+           continue
+        
+        if attachments[0]['type'] == 'photo':
+            try:
+                photo = attachments[0]['photo']['photo_1280']
+            except KeyError:
+                photo = attachments[0]['photo']['photo_130']
 
-        if type(attachments) == list:
-            ext_photo = attachments[0].get('photo',None)
-            if ext_photo:
-                photo = ext_photo.get('photo_604', None).decode('utf8')
+        elif attachments[0]['type'] == 'video':
+            try:
+                photo = attachments[0]['video']['photo_1280']
+            except KeyError:
+                photo = attachments[0]['video']['photo_130']
 
         else:
             photo = None
+        
+        l_ret.append(dict(text=text, photo= photo, date=date))
 
-        if photo:
-            photo = downloadPhoto(photo)
-
-        #tags = setTags(text)
-        tags = []
-
-        l_output.append( dict(text=text,tags=tags, photo=photo,
-                              date=date, group=group))
-
-    return l_output
-
-
-
-
-def updateDB():
-    groups = db.groupMenu()
-
-    for i in groups:
-        data = getPostsFromWallGroup(i)
-        db.addContent(data)
-
+    return l_ret
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        url = sys.argv[1]
-        sys.stdout.write(url)
+   if len(sys.argv) == 2:
+      url = sys.argv[1]
+      sys.stdout.write(url)

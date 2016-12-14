@@ -1,166 +1,168 @@
 #-*- coding: utf-8  -*-
 
-import os
+
 import logging
 import config
 import telebot
-
 import json
+from shortuuid import uuid
 
 from telebot import types
 from sqlalchemy.orm import sessionmaker
 
+from models import  engine
+from models import EventMenu, Group, Tag, Post
+
 import db
 
+cnt = 1
+
+if config.DEBUG:
+    import sys
+    sys.dont_write_bytecode = True
+
+
 logger = telebot.logger
-telebot.logger.setLevel(logging.ERROR)
-logger.info('Run view module')
+telebot.logger.setLevel(logging.DEBUG)
 
 bot  = telebot.TeleBot(config.TOKEN)
 
-def menu(txt, id, buttons , prefix = None):
-    """
-    set inline keyboard
-    """
-    l_button = []
-
-    for button in buttons:
-        l_button.append( types.InlineKeyboardButton (
-            text = button.label, callback_data =  ('.').join((prefix, button.handler, 0 , '')) if prefix else button.handler
-        ))
-
-    keyboard = types.InlineKeyboardMarkup(row_width=3)
-    keyboard.add(*l_button)
-    bot.send_message(id, txt, reply_markup = keyboard)
-
-
-def print_content(id, post, prefix_handler):
-    if not post:
-        bot.send_message(id, 'nothing')
-
-    else:
-        buttons = ['BACK', 'NEXT','CANCEL']
-        l_buttons = list()
-        for button in buttons:
-            handler = ('.').join([prefix_handler, button]).upper()
-            l_buttons.append( types.InlineKeyboardButton(
-                text = button, callback_data = handler ))
-
-        keyboard = types.InlineKeyboardMarkup(row_width = 2)
-        keyboard.add(*l_buttons)
-
-        if post.photo:
-            path_photo = '/'.join(('static',post.photo))
-            photo = open(path_photo, 'rb')
-            bot.send_photo(id, photo,  reply_markup = keyboard)
-
-        else:
-            bot.send_message(id, 'post', reply_markup = keyboard)
-
-
-def group(message, page, ext = None):
-    logger.debug('STATE:GROUP:EXT:%s' % ext)
-    if not ext:
-        groups =  db.groupMenu()
-        menu('Group', message.chat.id, groups, 'GROUP')
-
-    else:
-        group, page, direct = ext.split('.')
-        if direct == 'BACK':
-            page -= 1 if page > 0 else 0
-
-        elif direct == 'NEXT':
-            page += 1 if page < 10 else 10
-
-        else:
-            page = 0
-
-        post = db.readGroup(group, page)
-        logger.debug('POST:%s' % post)
-        prefix_handler = '.'.join([group,page])
-
-        print_content(message.chat.id, post, prefix_handler)
-
-
-def tag(message, ext = None):
-    logger.debug('STATE:TAG')
-    tags = db.tagMenu()
-    menu('Tags', message, tags)
-
-
-def event(message, ext = None):
-    logger.debug('STATE:EVENT')
-    event = db.eventMenu()
-    menu('Event', message, event)
-
-
-class StateMachine:
-
+ 
+class Pagination:
     def __init__(self):
-        self._state = dict(GROUP = group,
-                           TAG = tag,
-                           EVENT = event
-        )
+        self.cnt = 0
 
-    def set(self, handler, message):
+    def inc(self):
+        self.cnt += 1 if self.cnt <10 else 0
 
-        _handler = handler
-        ext = None
+    def dec(self):
+        self.cnt -= 1 if self.cnt > 0 else 0
 
-
-        if '.' in handler:
-            _handler, name, page, direct = handler.split('.')
+    @property
+    def cnt(self):
+        return self.cnt
 
 
-        if _handler not in self._state.keys():
-            logger.error('Error: No find handler: %s' % _handler)
-            return
+    
+class Session:
+    def __init__(self):
+        self._d = dict()
 
-        self._state[_handler](message, ext)
+    @property
+    def id(self):
+        return uuid()
+
+    def add(self,id, d_input):
+        assert(type(d_input == 'dict'))
+        self._d[id] = d_input
+
+    def get(self, id):
+        return self._d.get(id)
+
+    @property
+    def debug(self):
+        return self._d
+
+    
+
+pagination = Pagination()  
+session = Session()
+
+@bot.message_handler(commands=['start','help'])
+def message_start_help(message):
+    content = '*Это бот для агрегации новостей по теме социальных танцев, \
+    новости выбираются соотвествующим тегом'
+   
+    bot.send_message(message.chat.id, content)
+
+    
+@bot.message_handler(func=lambda message:True, content_types=['text'])
+def main(message):
+    menu = db.mainKeyboard()
+    keyboard = types.InlineKeyboardMarkup(row_width=4)
+    l_btns = list()
+    for btn in menu:
+        callable_button = types.InlineKeyboardButton(text=btn.group, callback_data= json.dumps(dict(button=btn.group)))
+        l_btns.append(callable_button)
+
+    keyboard.add(*l_btns)
+    #bot.reply_to(message,"asad")
+    bot.send_message(message.chat.id, 'main menu', reply_markup=keyboard)
 
 
-stm  = StateMachine()
 
 
-@bot.message_handler(commands=['start', 'tag', 'group','event'])
-def message_start_event(message):
-
-    if message.text == '/start':
-        l_buttons = db.mainMenu()
-        print l_buttons
-        menu('Choose one',message.chat.id, l_buttons )
-
-    elif message.text == '/tag':
-        l_buttons = db.tagMenu()
-        menu('Choose tag', message.chat.id, l_buttons)
-
-    elif message.text == '/group':
-        l_buttons = db.groupMenu()
-        menu('Choose group', message.chat.id, l_buttons)
-
-    elif message.text == '/event':
-        l_buttons = db.eventMenu()
-        menu('Choose event', message.chat.id, l_buttons)
-
-    else:
-        pass
-
-
-@bot.callback_query_handler(func = lambda call: True)
-def callback_data(call):
-    """ callback function bu ttons
+def send(call, post, buttons, session_id):
+    """ Send post
        """
-    #if call.message in ['BACK','NEXT','CANCEL']:
-    logger.info('DIRECT: %s' % call.message)
+    id = call.message.chat.id
+    mid = call.message.message_id
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    keys = list()
+    for i in buttons:
+        btn = types.InlineKeyboardButton( text = str(i), callback_data = json.dumps(dict(id=session_id, button=str(i))))
+        keys.append(btn)
 
-    if call.message:
+    keyboard.add(*keys)
+    bot.edit_message_text(chat_id=id, message_id=mid,text='%s \n%s'%(post.photo, post.content), reply_markup=keyboard)
 
-        handler = call.data
 
-        stm.set(handler, call.message)
+    
+def sendDiredPost(call, sid):
+    d_session =  session.get(sid)
+    assert(d_session)
+    group = d_session.get('group')
+    page  = d_session.get('page')
+    buttons = ['back', 'forward', 'cancel']
+    post = db.postInGroup(group, page)
+    
+    if post:
+        send(call, post, buttons, sid)
+    else:
+        logger.debug('Post no found:')
+    
 
+        
+        
+@bot.callback_query_handler(func=lambda call:True)
+def callback_data(call):
+     """ callback button
+       """
+     if call.message:
+        event =json.loads(call.data).get('button')
+        assert(event)
+        q_groups = db.groupAll()
+        groups = [i.group for i in q_groups]
+        if event in groups:
+            sid = session.id
+            session.add(sid, dict(page=0, group=event))
+            sendDiredPost(call, sid)
+
+        elif event in ['back','cancel','forward']:
+            sid  = json.loads(call.data).get('id')
+            assert(sid)
+            d_session = session.get(sid)
+            if  not d_session:
+                return
+            group = d_session.get('group')
+            page = d_session.get('page')
+         
+
+            if event == 'forward':
+                page += 1
+            elif event == 'back':
+                page -= 1
+            else:
+                page = 0
+            session.add(sid, dict(page=page, group=group))
+            logger.debug(session.debug)
+            sendDiredPost(call, sid)
+
+        else:
+            logger.debug(call.data)
+            
 
 
 
 if __name__ =='__main__':
-    bot.polling(none_stop=True)
+   bot.polling(none_stop=True)
