@@ -1,7 +1,7 @@
 # !/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import urllib2
+import requests
 import ast
 import re
 import sys
@@ -11,31 +11,49 @@ sys.setdefaultencoding('utf-8')
     Use public API http://vk.com
    """
 
+import json
+
 CNT  = 10
 
+URL = 'https://api.vk.com/method/wall.get'
+
 def request_posts(domain):
-    url = 'https://api.vk.com/method/wall.get?domain=' + \
-        domain+'&count=%d&v=5.3' % CNT
-    response = urllib2.urlopen(url)
-    body = response.read()
-    return body
+    params = dict(domain=domain, v=5.3, count=CNT)
+    res = requests.get(URL, params=params)
+    return res.text
+
 
 def read_content(url_address):
+    l_ret = list()
     ret = request_posts(url_address)
-    dict_posts = ast.literal_eval(ret)['response']['items']
+    try:
+        posts = json.loads(ret)['response']['items']
 
-    for post in dict_posts:
+    except KeyError:
+        print url_address
+        raise ValueError('test')
+
+    for post in posts:
         text = post.get('text', None)
         attachments = post.get('attachments')
-        photos = list()
         date = post['date']
-        if type(attachments) == list:
-            for photo in attachments:
-                photos.append(photo.get('photo', None))
-        else:
-            print 'Warning.'
+        if not attachments:
+           l_ret.append(dict(text=text, date=date))
+           continue
+        
+        if attachments[0]['type'] == 'photo':
+           photo = attachments[0]['photo']['photo_130']
 
-    return dict(text=text, photos=photos, date=date)
+        elif attachments[0]['type'] == 'video':
+            photo = attachments[0]['video']['photo_130']
+
+        else:
+            photo = None
+        
+        l_ret.append(dict(text=text, photo= photo, date=date))
+
+    return l_ret
+
 
 if __name__ == '__main__':
    if len(sys.argv) == 2:

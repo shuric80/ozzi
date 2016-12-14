@@ -40,24 +40,22 @@ def init():
     for i in tags:
         session.add(i)
     session.commit()
-
-    post = Post(content = u'вечеринка!!!', photo_path = u'static/1.jpg')
-    post.tags.append(tags[1])
-    post.tags.append(tags[2])
-    #post.groups.append(group[0])
-    session.add(post)
-
+    
     group = list()
-    g = Group(group = u'2mambo',url_vk = u'/2mamboproject')
-    g.posts.append(post)
-    group.append(Group(group = u'Mambotime', url_vk = u'/mambotime'))
-    group.append(Group(group = u'Salsa open', url_vk = u'/salsaopenmsk'))
-    group.append(Group(group = u'Salsa-Jam', url_vk = u'/salsa_jam'))
-    group.append(Group(group = u'Sierra Maestro',url_vk = u'/sierra_maestra_moscow'))
-    group.append(g)
+ 
+    group.append(Group(group = u'Mambotime', url_vk = u'mambotime'))
+    group.append(Group(group = u'Salsa open', url_vk = u'salsaopenmsk'))
+    group.append(Group(group = u'Salsa-Jam', url_vk = u'salsa_jam'))
+    group.append(Group(group = u'Sierra Maestro',url_vk = u'sierra_maestra_moscow'))
     for i in group:
         session.add(i)
 
+    session.commit()
+
+    post = Post(content='hello world!', created_at=0, photo='')
+    post.group = group[1]
+
+    session.add(post)
     session.commit()
 
 

@@ -1,0 +1,2 @@
+* add unlimited text.
+** split caption for image and text

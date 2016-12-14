@@ -3,7 +3,7 @@
 import sys
 from datetime import datetime
 
-from sqlalchemy import Table, Column, Integer,Unicode, Date
+from sqlalchemy import Table, Column, Integer,Unicode, DateTime
 from sqlalchemy import ForeignKey, create_engine
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
@@ -53,9 +53,10 @@ class Post(Base):
     __tablename__ = 'post'
 
     id  = Column( Integer, primary_key = True)
-    tstamp = Column( Date, default = datetime.utcnow)
+    tstamp = Column( DateTime, default = datetime.utcnow)
+    created_at = Column('Created',Integer, nullable = False)
     content = Column( 'Content', Unicode(255))
-    photo_path = Column( 'Photo', Unicode(50), nullable = True)
+    photo = Column( 'Photo', Unicode(50), nullable = True)
     group_id =  Column( Integer, ForeignKey('group.id'))
 
     tags = relationship( 'Tag',
