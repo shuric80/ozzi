@@ -42,10 +42,16 @@ def read_content(url_address):
            continue
         
         if attachments[0]['type'] == 'photo':
-           photo = attachments[0]['photo']['photo_130']
+            try:
+                photo = attachments[0]['photo']['photo_1280']
+            except KeyError:
+                photo = attachments[0]['photo']['photo_130']
 
         elif attachments[0]['type'] == 'video':
-            photo = attachments[0]['video']['photo_130']
+            try:
+                photo = attachments[0]['video']['photo_1280']
+            except KeyError:
+                photo = attachments[0]['video']['photo_130']
 
         else:
             photo = None

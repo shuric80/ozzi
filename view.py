@@ -66,7 +66,6 @@ class Session:
     
 
 pagination = Pagination()  
-            
 session = Session()
 
 @bot.message_handler(commands=['start','help'])
@@ -87,25 +86,28 @@ def main(message):
         l_btns.append(callable_button)
 
     keyboard.add(*l_btns)
+    #bot.reply_to(message,"asad")
     bot.send_message(message.chat.id, 'main menu', reply_markup=keyboard)
 
-    
 
-def send(id, post, buttons, session_id):
+
+
+def send(call, post, buttons, session_id):
     """ Send post
        """
+    id = call.message.chat.id
+    mid = call.message.message_id
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keys = list()
     for i in buttons:
         btn = types.InlineKeyboardButton( text = str(i), callback_data = json.dumps(dict(id=session_id, button=str(i))))
         keys.append(btn)
 
-    post.photo = 'http://placehold.it/300x150'
     keyboard.add(*keys)
-    bot.send_photo(chat_id = id, photo= post.photo, \
-                        caption= post.content, reply_markup = keyboard)
+    bot.edit_message_text(chat_id=id, message_id=mid,text='%s \n%s'%(post.photo, post.content), reply_markup=keyboard)
 
-        
+
+    
 def sendDiredPost(call, sid):
     d_session =  session.get(sid)
     assert(d_session)
@@ -113,12 +115,14 @@ def sendDiredPost(call, sid):
     page  = d_session.get('page')
     buttons = ['back', 'forward', 'cancel']
     post = db.postInGroup(group, page)
+    
     if post:
-        send(call.message.chat.id, post, buttons, sid)
+        send(call, post, buttons, sid)
     else:
         logger.debug('Post no found:')
     
 
+        
         
 @bot.callback_query_handler(func=lambda call:True)
 def callback_data(call):

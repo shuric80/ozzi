@@ -42,7 +42,7 @@ def init():
     session.commit()
     
     group = list()
- 
+    group.append(Group(group = u'2mambo', url_vk = u'2mambo'))
     group.append(Group(group = u'Mambotime', url_vk = u'mambotime'))
     group.append(Group(group = u'Salsa open', url_vk = u'salsaopenmsk'))
     group.append(Group(group = u'Salsa-Jam', url_vk = u'salsa_jam'))
