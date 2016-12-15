@@ -29,17 +29,20 @@ def groupID(id):
     return group
 
 
+
 def groupAll():
     with transaction.manager:
-        groups = session.query(Group).all()
-    
+        groups = session.query(Group)
+
+    session.close()
     return groups
 
 
 def tagAll():
     with transaction.manager:
         tags = [q[0] for q in session.query(Tag.tag).all()]
-    
+
+    session.close()
     return tags
 
 
@@ -47,25 +50,24 @@ def postUseTag(tag, page = 0):
     with transaction.manager:
         q_posts = session.query(Post).join(Post.tags). \
               filter(Tag.tag == tag).all()
-    
+
+    session.close()
     return q_posts[page]
 
 
 def postInGroup(group_id, num=0):
-    num = num if num in range(10) else 0
-         
     with transaction.manager:
         post = session.query(Post).join(Post.group) \
                .filter(Group.id== group_id) \
-               .order_by(Post.date) \
                .offset(num) \
                .first() \
 
+    session.close()
     return post
 
 
 def update_db():
-
+   
     groups = session.query(Group)
     for group in groups.all():
         ext, posts = read_content(group.url)

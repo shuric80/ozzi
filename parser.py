@@ -5,6 +5,8 @@ import requests
 import ast
 import re
 import sys
+import config
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 """ Request and parsing posts for wall groups.
@@ -13,9 +15,9 @@ sys.setdefaultencoding('utf-8')
 
 import json
 
-CNT  = 5
-
 URL = 'https://api.vk.com/method/wall.get'
+
+CNT = config.CNT
 
 def request_posts(domain, ext=False):
     params = dict(domain=domain, v=5.3, count=CNT, filter='owner', extended =1, fields= 'description,contacts')

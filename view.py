@@ -16,6 +16,7 @@ from models import EventMenu, Group, Tag, Post
 
 import db
 
+
 if config.DEBUG:
     import sys
     sys.dont_write_bytecode = True
@@ -27,6 +28,7 @@ else:
 
 logger = telebot.logger
 bot  = telebot.TeleBot(config.TOKEN)
+
 
 class Session:
     def __init__(self):
@@ -53,11 +55,11 @@ session = Session()
 
 @bot.message_handler(commands=['start'])
 def message_start(message):
-    #user_markup = types.ReplyKeyboardHide()
-    user_markup = types.ReplyKeyboardMarkup(resize_keyboard=True,one_time_keyboard= True, selective=True)
-    #user_markup.row('/menu')
-    content = 'test'
-    bot.send_message(message.chat.id, content, reply_markup=user_markup)
+    #user_markup = types.ReplyKeyboardRemove(remove_keyboard = False)
+    menu_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard= False, selective=True)
+    menu_markup.row('/menu')
+    content = 'Нажмите для вызова меню.'
+    bot.send_message(message.chat.id, content, reply_markup=menu_markup)
     
 
 @bot.message_handler(commands=['menu'])
@@ -80,14 +82,15 @@ def send(call, post, keyboard):
        """
     id = call.message.chat.id
     mid = call.message.message_id
-    created_at = time.strftime("%H:%M %d.%m\n",time.localtime(post.date))
+    created_at = time.strftime("%H:%M %d-%b-%Y",time.localtime(post.date))
     group = post.group.name
-
+    url = 'http://vk.com/{url}'.format(url=post.group.url)
+    
     if post.photos:
-        text = '{time} {group}\n{photo}\n{text}'.format(time=created_at, group=group, text=post.text, photo=post.photos)
+        text = '`{time}`\n*{group}*\n{photo}\n{text}'.format(time=created_at, url=url, group=group, text=post.text, photo=post.photos)
     else:
-        text = '{time} {group}\n{text}'.format(time=created_at, group=group, text=post.text)
-    bot.edit_message_text(chat_id=id, message_id=mid,text=text, reply_markup=keyboard)
+        text = '`{time}`\n*{group}*\n{text}'.format(time=created_at, group=group, text=post.text)
+    bot.edit_message_text(chat_id=id, message_id=mid,text=text,reply_markup=keyboard, parse_mode="Markdown")
     #bot.send_message(id, '%s \n%s'%(post.photo, post.content), reply_markup=keyboard)
 
 
@@ -121,9 +124,9 @@ def callback_data(call):
     if call.message:
         event =json.loads(call.data).get('button')
         assert(event)
-        q_groups = db.groupAll()
-        groups_id = [i.id for i in q_groups]
-
+        groups_all = db.groupAll()
+        assert(groups_all)
+        groups_id = [i.id for i in groups_all]
         if event in groups_id:
             logger.debug('choosed group:%s' % event)
             sid = session.id
