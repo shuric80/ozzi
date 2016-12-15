@@ -26,7 +26,7 @@ def groupAll():
     session.close()
     return groups
 
-    
+
 def tagAll():
 
     tags = [q[0] for q in session.query(Tag.tag).all()]
@@ -36,7 +36,7 @@ def tagAll():
 
 def postUseTag(tag, page = 0):
     q_posts = session.query(Post).join(Post.tags). \
-                 filter(Tag.tag == tag).all()
+              filter(Tag.tag == tag).all()
     session.close()
     return q_posts[page]
 
@@ -44,25 +44,27 @@ def postUseTag(tag, page = 0):
 def postInGroup(name, num=0):
     #logger.debug(name)
     q_post = session.query(Post).join(Post.group). \
-                 filter(Group.group== name).all()
+             filter(Group.group== name).all()
     post = q_post[num] if len(q_post) > num else None
     session.close()
     return post
 
 
 def update_db():
+
     groups = session.query(Group)
     for group in groups.all():
+        print group.url_vk
         #posts_tm = session.query(Post.created_at).filter_by(group=group).all()
-        posts_wall = read_content(group.url_vk)
-        for iter_post in posts_wall:
+        posts = read_content(group.url_vk)
+        for i in posts:
 
             post = Post(
-                content = iter_post.get('text'),
-                photo = iter_post.get('photo'),
+                content = i['text'],
+                photo = i['photo'],
                 group = group,
-                created_at = iter_post.get('date',0)
-            )
+                created_at = i['date'])
+
             session.add(post)
 
     session.commit()

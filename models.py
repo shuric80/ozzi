@@ -17,8 +17,8 @@ engine = create_engine('sqlite:///telegram_bot.db', echo=False)
 Base = declarative_base()
 
 association_table = Table( 'association', Base.metadata,
-                          Column( 'tag_id',Integer, ForeignKey('tag.id')),
-                          Column( 'post_id', Integer,ForeignKey('post.id'))
+                           Column( 'tag_id',Integer, ForeignKey('tag.id')),
+                           Column( 'post_id', Integer,ForeignKey('post.id'))
 )
 
 class EventMenu(Base):
@@ -41,13 +41,13 @@ class Group(Base):
 
 
 class Tag(Base):
-    
+
     __tablename__ = 'tag'
 
     id = Column( Integer, primary_key=True)
     tag = Column( Unicode(30), nullable=False)
 
-    
+
 class Post(Base):
 
     __tablename__ = 'post'
@@ -60,5 +60,5 @@ class Post(Base):
     group_id =  Column( Integer, ForeignKey('group.id'))
 
     tags = relationship( 'Tag',
-        secondary = association_table,
-        backref = backref('posts'))
+                         secondary = association_table,
+                         backref = backref('posts'))
