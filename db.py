@@ -54,13 +54,11 @@ def update_db():
 
     groups = session.query(Group)
     for group in groups.all():
-        print group.url_vk
-        #posts_tm = session.query(Post.created_at).filter_by(group=group).all()
-        posts = read_content(group.url_vk)
+        posts = read_content(group.url)
         for i in posts:
 
             post = Post(
-                content = i['text'],
+                text = i['text'],
                 photo = i['photo'],
                 group = group,
                 created_at = i['date'])

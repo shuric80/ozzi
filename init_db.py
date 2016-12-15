@@ -3,92 +3,65 @@ import sys
 sys.dont_write_bytecode = True
 
 import sys
-
+import argparse
+import types
 from sqlalchemy.orm import sessionmaker
-
 from models import engine
 from models import Base
 from models import EventMenu, Group, Post, Tag
 from db import update_db
+import config
 
 """
    create - Create db
     init - initialize data db
   """
 
-def create():
+parser = argparse.ArgumentParser(description = 'Create and initialized base.')
+parser.add_argument('-d','--action', default='all', help='One or few actions for database')
+action =  parser.parse_args().action
+
+
+def create_db():
     Base.metadata.create_all(engine)
-    print 'Done.'
+    
 
-
-def init():
+def init_db():
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    menu = list()
-    menu.append( EventMenu(name = u'Events'))
-    menu.append( EventMenu(name = u'Schools'))
-    menu.append( EventMenu(name = u'News'))
-    for i in menu:
-        session.add(i)
+    groups = config.GROUPS
+    assert(type(groups) == types.TupleType)
+    for group in groups:
+        db_group = Group()
+        db_group.name = group['name']
+        db_group.url = group['url']
 
-    tags = list()
-    tags.append(Tag(tag = 'Salsa'))
-    tags.append(Tag(tag = u'Salsa on2'))
-    tags.append(Tag(tag = u'Social'))
-    tags.append(Tag(tag = u'Bachata'))
-    tags.append(Tag(tag = u'Lesson'))
-    for i in tags:
-        session.add(i)
-<<<<<<< HEAD
-    session.commit()
+        session.add(db_group)
     
-    group = list()
-    group.append(Group(group = u'2mambo', url_vk = u'2mambo'))
-=======
-        session.commit()
-
-    group = list()
-    group.append(Group(group = u'2mambo', url_vk = u'2mamboproject'))
->>>>>>> f31c4015d38f17016bfd5a6f14907aeec1315e90
-    group.append(Group(group = u'Mambotime', url_vk = u'mambotime'))
-    group.append(Group(group = u'Salsa open', url_vk = u'salsaopenmsk'))
-    group.append(Group(group = u'Salsa-Jam', url_vk = u'salsa_jam'))
-    group.append(Group(group = u'Sierra Maestro',url_vk = u'sierra_maestra_moscow'))
-    for i in group:
-        session.add(i)
-
-    session.commit()
-
-    post = Post(content='hello world!', created_at=0, photo='')
-    post.group = group[1]
-
-    session.add(post)
     session.commit()
 
 
 def update():
     update_db()
 
+if action == 'create':
+    create_db()
 
-if  __name__ == '__main__':
-    if len(sys.argv)==1:
-        create()
-        init()
-        update()
-        sys.stdout.write('Done.')
+elif action == 'init':
+    init_db()
 
+elif action == 'update':
+    update_db()
 
-    elif sys.argv[1] == 'create':
-        create()
+elif action == 'all':
+    create_db()
+    init_db()
+    update_db()
 
-    elif sys.argv[1] == 'init':
-        init()
+else:
+    sys.stderr.write('Error argument')
+    sys.exit(-1)
 
-    elif sys.argv[1] == 'update':
-        update()
-
-    else:
-        pass
-
-    sys.exit(0)
+sys.stdout.write('Done')
+sys.exit(0)

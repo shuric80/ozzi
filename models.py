@@ -34,10 +34,9 @@ class Group(Base):
     __tablename__ = 'group'
 
     id = Column( Integer, primary_key=True)
-    group = Column( Unicode(20), nullable=False)
-    url_vk = Column( Unicode(50), nullable=True)
-
-    posts = relationship('Post', backref="group")
+    name = Column( Unicode(20), nullable=False)
+    url = Column( Unicode(50), nullable=True)
+    posts = relationship('Post', backref= backref('group', lazy = 'joined'))
 
 
 class Tag(Base):
@@ -55,10 +54,10 @@ class Post(Base):
     id  = Column( Integer, primary_key = True)
     tstamp = Column( DateTime, default = datetime.utcnow)
     created_at = Column('Created',Integer, nullable = False)
-    content = Column( 'Content', Unicode(255))
-    photo = Column( 'Photo', Unicode(50), nullable = True)
+    text = Column( 'Content', Unicode(4096))
+    photo = Column( 'Photo', Unicode(128), nullable = True)
     group_id =  Column( Integer, ForeignKey('group.id'))
 
     tags = relationship( 'Tag',
                          secondary = association_table,
-                         backref = backref('posts'))
+                         backref = backref('posts', lazy="joined"))
