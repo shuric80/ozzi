@@ -13,7 +13,7 @@ sys.setdefaultencoding('utf-8')
 
 import json
 
-CNT  = 10
+CNT  = 5
 
 URL = 'https://api.vk.com/method/wall.get'
 
@@ -33,10 +33,10 @@ def serializePost(post):
     
         for attach in attachments:
             if attach['type'] == 'photo':
-                photo.append(attach['photo'].get('photo_130'))
+                photo.append(attach['photo'].get('photo_604'))
 
             elif attach['type'] == 'video':
-                video.append(attach['video'].get('photo_130'))
+                photo.append(attach['video'].get('photo_604'))
                 title = attach['video']['title']
                 description = attach['video']['description']
 
@@ -64,12 +64,11 @@ def read_content(url_address):
         
     for post in j_posts['response']['items']:
         if post['post_type'] == 'post':
-            d_post = dict()
-            if post.get('copy_history'):
-                d_post = serializePost(post['copy_history'])
-            else:
-                d_post = serializePost(post)
-    
+            d_post = serializePost(post)
+            l_ret.append(d_post)
+
+        elif post['post_type'] == 'copy':
+            d_post =serializePost( post['copy_history'][0])
             l_ret.append(d_post)
 
     return ext, l_ret

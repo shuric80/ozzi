@@ -19,11 +19,13 @@ import db
 if config.DEBUG:
     import sys
     sys.dont_write_bytecode = True
+    telebot.logger.setLevel(logging.DEBUG)
+
+else:    
+    telebot.logger.setLevel(logging.WARNING)
 
 
 logger = telebot.logger
-telebot.logger.setLevel(logging.WARNING)
-
 bot  = telebot.TeleBot(config.TOKEN)
 
 class Session:
@@ -49,21 +51,23 @@ class Session:
 session = Session()
 
 
-@bot.message_handler(commands=['start','help'])
-def message_start_help(message):
-    content = '*Это бот для агрегации новостей по теме социальных танцев, \
-    новости выбираются соотвествующим тегом'
+@bot.message_handler(commands=['start'])
+def message_start(message):
+    user_markup = types.ReplyKeyboardHide()
+    #user_markup = types.ReplyKeyboardMarkup(True, True)
+    #user_markup.row('/menu')
+    content = 'test'
+    bot.send_message(message.chat.id, content, reply_markup=user_markup)
+    
 
-    bot.send_message(message.chat.id, content)
-
-
-@bot.message_handler(func=lambda message:True, content_types=['text'])
+@bot.message_handler(commands=['menu'])
 def main(message):
-    menu = db.mainKeyboard()
+    #menu = db.mainKeyboard()
+    menu = db.groupAll()
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     l_btns = list()
     for btn in menu:
-        callable_button = types.InlineKeyboardButton(text=btn.name, callback_data= json.dumps(dict(button=btn.name)))
+        callable_button = types.InlineKeyboardButton(text=btn.name[:20], callback_data= json.dumps(dict(button=btn.id)))
         l_btns.append(callable_button)
 
     keyboard.add(*l_btns)
@@ -71,36 +75,36 @@ def main(message):
     bot.send_message(message.chat.id, 'main menu', reply_markup=keyboard)
 
 
-
-
 def send(call, post, keyboard):
     """ Send post
        """
     id = call.message.chat.id
     mid = call.message.message_id
-    created_at = time.strftime("%H:%M %d.%m\n",time.localtime(post.created_at))
-    if post.photo:
-        text = '{time}\n{photo}\n{text}'.format(time=created_at, text=post.text, photo=post.photo)
+    created_at = time.strftime("%H:%M %d.%m\n",time.localtime(post.date))
+    group = post.group.name
+
+    if post.photos:
+        text = '{time} {group}\n{photo}\n{text}'.format(time=created_at, group=group, text=post.text, photo=post.photos)
     else:
-        text = '{time}\n{text}'.format(time=created_at, text=post.text)
+        text = '{time} {group}\n{text}'.format(time=created_at, group=group, text=post.text)
     bot.edit_message_text(chat_id=id, message_id=mid,text=text, reply_markup=keyboard)
     #bot.send_message(id, '%s \n%s'%(post.photo, post.content), reply_markup=keyboard)
-
 
 
 def sendDiredPost(call, sid):
     d_session =  session.get(sid)
     assert(d_session)
-    group = d_session.get('group')
+    group_id = d_session.get('group_id')
     page  = d_session.get('page')
-    buttons = ['back', 'forward', 'cancel']
-    post = db.postInGroup(group, page)
+    buttons = ['back', 'forward']
+    post = db.postInGroup(group_id, page)
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keys = list()
     for i in buttons:
-        btn = types.InlineKeyboardButton( text = str(i), callback_data = json.dumps(dict(id=sid, button=str(i))))
+        btn = types.InlineKeyboardButton(text = str(i), callback_data = json.dumps(dict(id=sid, button=str(i))))
         keys.append(btn)
-
+    group = db.groupID(group_id)
+    keys.append(types.InlineKeyboardButton(text='Goto to group', url='http://vk.com/%s'%group.url))
     keyboard.add(*keys)
 
     if post:
@@ -114,24 +118,25 @@ def sendDiredPost(call, sid):
 def callback_data(call):
     """ callback button
        """
-
     if call.message:
         event =json.loads(call.data).get('button')
         assert(event)
         q_groups = db.groupAll()
-        groups = [i.name for i in q_groups]
-        if event in groups:
+        groups_id = [i.id for i in q_groups]
+
+        if event in groups_id:
+            logger.debug('choosed group:%s' % event)
             sid = session.id
-            session.add(sid, dict(page=0, group=event))
+            session.add(sid, dict(page=0, group_id=event))
             sendDiredPost(call, sid)
 
-        elif event in ['back','cancel','forward']:
+        elif event in ['back','forward']:
             sid  = json.loads(call.data).get('id')
             assert(sid)
             d_session = session.get(sid)
             if  not d_session:
                 return
-            group = d_session.get('group')
+            group_id = d_session.get('group_id')
             page = d_session.get('page')
 
             if event == 'forward':
@@ -143,12 +148,13 @@ def callback_data(call):
             else:
                 page = 0
 
-            session.add(sid, dict(page=page, group=group))
+            session.add(sid, dict(page=page, group_id=group_id))
             logger.debug(session.debug)
             sendDiredPost(call, sid)
 
         else:
             logger.debug(call.data)
 
+            
 if __name__ =='__main__':
     bot.polling(none_stop=True)

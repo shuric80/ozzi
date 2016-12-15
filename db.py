@@ -14,9 +14,15 @@ session = Session()
 
 
 def mainKeyboard():
-    btns = session.query(Group.name).all()
+    btns = session.query(Group.id).all()
     session.close()
     return btns
+
+def groupID(id):
+    print "ID:%s" %id
+    group = session.query(Group).filter_by(id=id).first()
+    session.close()
+    return group
 
 
 def groupAll():
@@ -39,9 +45,9 @@ def postUseTag(tag, page = 0):
     return q_posts[page]
 
 
-def postInGroup(name, num=0):
+def postInGroup(group_id, num=0):
     q_post = session.query(Post).join(Post.group). \
-             filter(Group.name== name).all()
+             filter(Group.id== group_id).all()
     post = q_post[num] if len(q_post) > num else None
     session.close()
     return post
@@ -61,7 +67,7 @@ def update_db():
         for i in posts:
             post = Post(
                 text = i['text'],
-                #photo = i['photo'],
+                photos = i['photo'][0] if i['photo'] else None,
                 group = group,
                 date = i['date']
             )

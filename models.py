@@ -36,6 +36,7 @@ class Group(Base):
 
     id = Column( Integer, primary_key=True)
     name = Column( Unicode(20), nullable=False)
+    #title = Column(Unicode(20))
     description = Column(Unicode(512))
     photo = Column(Unicode(128))
     email = Column(Unicode(62))
