@@ -53,8 +53,8 @@ session = Session()
 
 @bot.message_handler(commands=['start'])
 def message_start(message):
-    user_markup = types.ReplyKeyboardHide()
-    #user_markup = types.ReplyKeyboardMarkup(True, True)
+    #user_markup = types.ReplyKeyboardHide()
+    user_markup = types.ReplyKeyboardMarkup(resize_keyboard=True,one_time_keyboard= True, selective=True)
     #user_markup.row('/menu')
     content = 'test'
     bot.send_message(message.chat.id, content, reply_markup=user_markup)

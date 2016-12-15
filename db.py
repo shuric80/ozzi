@@ -52,10 +52,15 @@ def postUseTag(tag, page = 0):
 
 
 def postInGroup(group_id, num=0):
-    q_post = session.query(Post).join(Post.group). \
-             filter(Group.id== group_id).all()
-    post = q_post[num] if len(q_post) > num else None
-    session.close()
+    num = num if num in range(10) else 0
+         
+    with transaction.manager:
+        post = session.query(Post).join(Post.group) \
+               .filter(Group.id== group_id) \
+               .order_by(Post.date) \
+               .offset(num) \
+               .first() \
+
     return post
 
 

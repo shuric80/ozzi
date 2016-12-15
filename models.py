@@ -46,6 +46,9 @@ class Group(Base):
     
     posts = relationship('Post', backref= backref('group', lazy = 'joined'))
 
+    def __repr__(self):
+        return '<Group:%s>' % self.name
+
 
 class Tag(Base):
 
@@ -68,3 +71,6 @@ class Post(Base):
     tags = relationship( 'Tag',
                          secondary = association_table,
                          backref = backref('posts', lazy="joined"))
+
+    def __repr__(self):
+        return "<Post:%s>" % self.text
