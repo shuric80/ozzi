@@ -1,6 +1,8 @@
 #-*- coding:utf-8 -*-
 import logging
 from sqlalchemy.orm import sessionmaker
+import transaction
+
 from models import engine
 from models import Post, EventMenu, Tag, Group
 
@@ -14,34 +16,38 @@ session = Session()
 
 
 def mainKeyboard():
-    btns = session.query(Group.id).all()
-    session.close()
+    with transaction.manager as t:
+        btns = session.query(Group.id).all()
+        t.note('test')
+    
     return btns
 
 def groupID(id):
-    print "ID:%s" %id
-    group = session.query(Group).filter_by(id=id).first()
-    session.close()
+    with transaction.manager:
+        group = session.query(Group).filter_by(id=id).first()
+    
     return group
 
 
 def groupAll():
-    groups = session.query(Group).all()
-    session.close()
+    with transaction.manager:
+        groups = session.query(Group).all()
+    
     return groups
 
 
 def tagAll():
-
-    tags = [q[0] for q in session.query(Tag.tag).all()]
-    session.close()
+    with transaction.manager:
+        tags = [q[0] for q in session.query(Tag.tag).all()]
+    
     return tags
 
 
 def postUseTag(tag, page = 0):
-    q_posts = session.query(Post).join(Post.tags). \
+    with transaction.manager:
+        q_posts = session.query(Post).join(Post.tags). \
               filter(Tag.tag == tag).all()
-    session.close()
+    
     return q_posts[page]
 
 
