@@ -21,6 +21,7 @@ association_table = Table( 'association', Base.metadata,
                            Column( 'post_id', Integer,ForeignKey('post.id'))
 )
 
+
 class EventMenu(Base):
 
     __tablename__ = 'main'
@@ -35,14 +36,19 @@ class Group(Base):
 
     id = Column( Integer, primary_key=True)
     name = Column( Unicode(20), nullable=False)
+    description = Column(Unicode(512))
+    photo = Column(Unicode(128))
+    email = Column(Unicode(62))
+    phone = Column(Unicode(12))
     url = Column( Unicode(50), nullable=True)
+    desc = Column( Unicode(128))
+    
     posts = relationship('Post', backref= backref('group', lazy = 'joined'))
 
 
 class Tag(Base):
 
     __tablename__ = 'tag'
-
     id = Column( Integer, primary_key=True)
     tag = Column( Unicode(30), nullable=False)
 
@@ -53,9 +59,9 @@ class Post(Base):
 
     id  = Column( Integer, primary_key = True)
     tstamp = Column( DateTime, default = datetime.utcnow)
-    created_at = Column('Created',Integer, nullable = False)
+    date = Column('Created',Integer, nullable = False)
     text = Column( 'Content', Unicode(4096))
-    photo = Column( 'Photo', Unicode(128), nullable = True)
+    photos = Column( 'Photo', Unicode(512), nullable = True)
     group_id =  Column( Integer, ForeignKey('group.id'))
 
     tags = relationship( 'Tag',

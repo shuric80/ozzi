@@ -14,8 +14,6 @@ session = Session()
 
 
 def mainKeyboard():
-    #menu = [q[0] for q in session.query(EventMenu.name).all()]
-    #return menu[:3]
     btns = session.query(Group.name).all()
     session.close()
     return btns
@@ -42,7 +40,6 @@ def postUseTag(tag, page = 0):
 
 
 def postInGroup(name, num=0):
-    #logger.debug(name)
     q_post = session.query(Post).join(Post.group). \
              filter(Group.name== name).all()
     post = q_post[num] if len(q_post) > num else None
@@ -54,16 +51,23 @@ def update_db():
 
     groups = session.query(Group)
     for group in groups.all():
-        posts = read_content(group.url)
+        ext, posts = read_content(group.url)
+        group.description = ext['description']
+        group.photo = ext['photo']
+        group.name = ext['name']
+        group.phone = ext['phone']
+        group.email = ext['email']
+        group.desc = ext['desc']
         for i in posts:
-
             post = Post(
                 text = i['text'],
-                photo = i['photo'],
+                #photo = i['photo'],
                 group = group,
-                created_at = i['date'])
-
+                date = i['date']
+            )
             session.add(post)
+            
+        session.add(group)
 
     session.commit()
     session.close()
