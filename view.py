@@ -63,7 +63,7 @@ def main(message):
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     l_btns = list()
     for btn in menu:
-        callable_button = types.InlineKeyboardButton(text=btn.group, callback_data= json.dumps(dict(button=btn.group)))
+        callable_button = types.InlineKeyboardButton(text=btn.name, callback_data= json.dumps(dict(button=btn.name)))
         l_btns.append(callable_button)
 
     keyboard.add(*l_btns)
@@ -79,7 +79,10 @@ def send(call, post, keyboard):
     id = call.message.chat.id
     mid = call.message.message_id
     created_at = time.strftime("%H:%M %d.%m\n",time.localtime(post.created_at))
-    text = '{time}\n{photo}\n{text}'.format(time=created_at,  text=post.content,photo=post.photo)
+    if post.photo:
+        text = '{time}\n{photo}\n{text}'.format(time=created_at, text=post.text, photo=post.photo)
+    else:
+        text = '{time}\n{text}'.format(time=created_at, text=post.text)
     bot.edit_message_text(chat_id=id, message_id=mid,text=text, reply_markup=keyboard)
     #bot.send_message(id, '%s \n%s'%(post.photo, post.content), reply_markup=keyboard)
 
@@ -92,8 +95,6 @@ def sendDiredPost(call, sid):
     page  = d_session.get('page')
     buttons = ['back', 'forward', 'cancel']
     post = db.postInGroup(group, page)
-    post.photo = post.photo if post.photo else ''
-
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keys = list()
     for i in buttons:
@@ -118,7 +119,7 @@ def callback_data(call):
         event =json.loads(call.data).get('button')
         assert(event)
         q_groups = db.groupAll()
-        groups = [i.group for i in q_groups]
+        groups = [i.name for i in q_groups]
         if event in groups:
             sid = session.id
             session.add(sid, dict(page=0, group=event))

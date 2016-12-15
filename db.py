@@ -16,7 +16,7 @@ session = Session()
 def mainKeyboard():
     #menu = [q[0] for q in session.query(EventMenu.name).all()]
     #return menu[:3]
-    btns = session.query(Group.group).all()
+    btns = session.query(Group.name).all()
     session.close()
     return btns
 
@@ -44,7 +44,7 @@ def postUseTag(tag, page = 0):
 def postInGroup(name, num=0):
     #logger.debug(name)
     q_post = session.query(Post).join(Post.group). \
-             filter(Group.group== name).all()
+             filter(Group.name== name).all()
     post = q_post[num] if len(q_post) > num else None
     session.close()
     return post
