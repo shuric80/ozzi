@@ -59,9 +59,9 @@ def read_content(url_address):
                     name = groups[0]['name'],
                     description = groups[0]['description'],
                     photo = groups[0]['photo_100'],
-                    phone = groups[0]['contacts'][0].get('phone'),
-            email = groups[0]['contacts'][0].get('email'),
-            desc = groups[0]['contacts'][0].get('desc'),
+                    phone = None,#groups[0]['contacts'][0].get('phone'),
+            email = None, #groups[0]['contacts'][0].get('email'),
+            desc =None# groups[0]['contacts'][0].get('desc'),
                               )
         
     for post in j_posts['response']['items']:

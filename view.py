@@ -86,12 +86,13 @@ def send(call, post, keyboard):
     group = post.group.name
     url = 'http://vk.com/{url}'.format(url=post.group.url)
     
-    if post.photos:
-        text = '`{time}`\n*{group}*\n{photo}\n{text}'.format(time=created_at, url=url, group=group, text=post.text, photo=post.photos)
+    if post.photos and len(post.text) < 3000:
+        text = u'<code>{time}</code>\n<b>{group}</b>\n{photo}\n{text}'.format(time=created_at, url=url, group=group, text=post.text, photo=post.photos)
     else:
-        text = '`{time}`\n*{group}*\n{text}'.format(time=created_at, group=group, text=post.text)
-    bot.edit_message_text(chat_id=id, message_id=mid,text=text,reply_markup=keyboard, parse_mode="Markdown")
-    #bot.send_message(id, '%s \n%s'%(post.photo, post.content), reply_markup=keyboard)
+        text = u'<code>{time}</code>\n<b>{group}</b>\n{text}'.format(time=created_at, group=group, text=post.text[:4000])
+
+    bot.edit_message_text(chat_id=id, message_id=mid, text=text, reply_markup=keyboard, parse_mode="HTML")
+    #bot.edit_message_text(chat_id=id,message_id=mid,text='%s \n%s'%(post.photos, post.text), reply_markup=keyboard)
 
 
 def sendDiredPost(call, sid):
@@ -101,8 +102,15 @@ def sendDiredPost(call, sid):
     page  = d_session.get('page')
     buttons = ['back', 'forward']
     post = db.postInGroup(group_id, page)
+    if not post:
+        return
+    assert(post)
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keys = list()
+
+    #menu_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard= True)
+    #menu_markup.row('/menu')
+
     for i in buttons:
         btn = types.InlineKeyboardButton(text = str(i), callback_data = json.dumps(dict(id=sid, button=str(i))))
         keys.append(btn)
