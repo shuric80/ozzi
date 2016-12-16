@@ -45,6 +45,12 @@ def tagAll():
     session.close()
     return tags
 
+def getPost(id):
+    with transaction.manager:
+        post = session.query(Post).get(id)
+
+    session.close()
+    return post
 
 def postUseTag(tag, page = 0):
     with transaction.manager:
@@ -66,6 +72,14 @@ def postInGroup(group_id, num=0):
     return post
 
 
+def lastPosts():
+    with transaction.manager:
+        posts = session.query(Post).order_by(Post.date.desc()).limit(5)
+
+    return posts
+
+
+    
 def update_db():
    
     groups = session.query(Group)

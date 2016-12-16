@@ -52,19 +52,19 @@ class Session:
 
 session = Session()
 
-text = """ Этот бот  новостей по теме социальных танцев. 
+text = """<strong>Этот бот  новостей по теме социальных танцев.</strong> 
 Он умеет так: 
 /groups - меню по всем группам.
 /last - 5 последних сообщений.
 /about [name] - информация о школе [name].
-/news [tag] -  новости по тэгу [tag]
+/news [tag] - новости по тэгу [tag]
 /help - вывод этого меню.
     """
 
 
 @bot.message_handler(commands=['start','help'])
 def message_start(message):
-    bot.send_message(message.chat.id, text)
+    bot.send_message(message.chat.id, text, parse_mode='HTML')
 
 @bot.message_handler(commands=['groups'])
 def main(message):
@@ -78,7 +78,20 @@ def main(message):
     keyboard.add(*l_btns)
     bot.send_message(message.chat.id, 'main menu', reply_markup=keyboard, parse_mode='HTML')
 
+@bot.message_handler(commands=['last'])
+def last(message):
+    last_posts = db.lastPosts()
+    button = 'Read...'
+    for post in last_posts:
+        created_at = time.strftime("%H:%M %d-%b-%Y",time.localtime(post.date))
+        group = post.group.name
+        keyboard = types.InlineKeyboardMarkup(row_width=2)
+        callable_button = types.InlineKeyboardButton(text=button, callback_data=json.dumps(dict(post=post.id)))
+        text = u'<code>{time}</code>\n<b>{group}</b>\n{text}'.format(time=created_at, group=group, text=post.text[:200])
+        keyboard.add(callable_button)
+        bot.send_message(message.chat.id, text, reply_markup=keyboard, parse_mode='HTML', disable_web_page_preview=True)
 
+        
 def send(call, post, keyboard):
     """ Send post
        """
@@ -96,6 +109,12 @@ def send(call, post, keyboard):
     bot.edit_message_text(chat_id=id, message_id=mid, text=text, reply_markup=keyboard, parse_mode="HTML")
     #bot.edit_message_text(chat_id=id,message_id=mid,text='%s \n%s'%(post.photos, post.text), reply_markup=keyboard)
 
+    
+def sendPost(call, post_id):
+    keyboard=None
+    post = db.getPost(post_id)
+    send(call, post, keyboard)
+    
 
 def sendDiredPost(call, sid):
     d_session =  session.get(sid)
@@ -133,6 +152,12 @@ def callback_data(call):
        """
     if call.message:
         event =json.loads(call.data).get('button')
+        post_id = json.loads(call.data).get('post')
+
+        if post_id:
+            sendPost(call, post_id)
+            return
+        
         assert(event)
         groups_all = db.groupAll()
         assert(groups_all)
