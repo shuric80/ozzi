@@ -55,8 +55,7 @@ session = Session()
 
 @bot.message_handler(commands=['start'])
 def message_start(message):
-    #user_markup = types.ReplyKeyboardRemove(remove_keyboard = False)
-    menu_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard= False, selective=True)
+    menu_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard= True, selective=True)
     menu_markup.row('/menu')
     content = 'Нажмите для вызова меню.'
     bot.send_message(message.chat.id, content, reply_markup=menu_markup)
@@ -69,7 +68,7 @@ def main(message):
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     l_btns = list()
     for btn in menu:
-        callable_button = types.InlineKeyboardButton(text=btn.name[:20], callback_data= json.dumps(dict(button=btn.id)))
+        callable_button = types.InlineKeyboardButton(text=btn.name.split(' ')[0], callback_data= json.dumps(dict(button=btn.id)))
         l_btns.append(callable_button)
 
     keyboard.add(*l_btns)

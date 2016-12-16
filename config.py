@@ -3,7 +3,7 @@
 CNT =10
 TOKEN = '246271863:AAEUJQJ7aHByov0wnHBjSUGseL1ixU1mSgk'
 DEBUG = True
-GROUPS = (
+GROUPS = ({'url':'fridaynysalsa', 'name':''},
     {'name':'2mambo',
      'url':'2mamboproject' },
     {'name':'',
