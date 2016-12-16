@@ -52,18 +52,22 @@ class Session:
 
 session = Session()
 
+text = """ Этот бот  новостей по теме социальных танцев. 
+Он умеет так: 
+/groups - меню по всем группам.
+/last - 5 последних сообщений.
+/about [name] - информация о школе [name].
+/news [tag] -  новости по тэгу [tag]
+/help - вывод этого меню.
+    """
 
-@bot.message_handler(commands=['start'])
+
+@bot.message_handler(commands=['start','help'])
 def message_start(message):
-    menu_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard= True, selective=True)
-    menu_markup.row('/menu')
-    content = 'Нажмите для вызова меню.'
-    bot.send_message(message.chat.id, content, reply_markup=menu_markup)
-    
+    bot.send_message(message.chat.id, text)
 
-@bot.message_handler(commands=['menu'])
+@bot.message_handler(commands=['groups'])
 def main(message):
-    #menu = db.mainKeyboard()
     menu = db.groupAll()
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     l_btns = list()
@@ -72,8 +76,7 @@ def main(message):
         l_btns.append(callable_button)
 
     keyboard.add(*l_btns)
-    #bot.reply_to(message,"asad")
-    bot.send_message(message.chat.id, 'main menu', reply_markup=keyboard)
+    bot.send_message(message.chat.id, 'main menu', reply_markup=keyboard, parse_mode='HTML')
 
 
 def send(call, post, keyboard):
