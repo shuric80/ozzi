@@ -1,6 +1,4 @@
 #-*- coding: utf-8  -*-
-
-
 import logging
 import config
 import telebot
@@ -31,6 +29,14 @@ bot  = telebot.TeleBot(config.TOKEN)
 
 
 class Session:
+    instance = None
+    #create singleton
+    def __new__(cls):
+        if cls.inctance is None:
+            cls = super(C, cls).__new__(cls)
+
+        return cls.instance
+
     def __init__(self):
         self._d = dict()
 
@@ -78,16 +84,30 @@ def main(message):
     keyboard.add(*l_btns)
     bot.send_message(message.chat.id, 'main menu', reply_markup=keyboard, parse_mode='HTML')
 
+@bot.message_handler(commands='update')
+def update(message):
+    pass
+    
+    
 @bot.message_handler(commands=['last'])
 def last(message):
-    last_posts = db.lastPosts()
-    button = 'Read...'
+    cnt = 5
+    if len(message.text.split(' ')) >1:
+        try:
+            cnt = int(message.text.split(' ')[1])  if 0 < cnt< 10 else 5 
+        except ValueError:
+            cnt = 5
+
+    #assert(cnt >0 and cnt < 30)
+    last_posts = db.lastPosts(cnt)
+    button = 'Открыть'
     for post in last_posts:
         created_at = time.strftime("%H:%M %d-%b-%Y",time.localtime(post.date))
         group = post.group.name
         keyboard = types.InlineKeyboardMarkup(row_width=2)
         callable_button = types.InlineKeyboardButton(text=button, callback_data=json.dumps(dict(post=post.id)))
-        text = u'<code>{time}</code>\n<b>{group}</b>\n{text}'.format(time=created_at, group=group, text=post.text[:200])
+        url_button = types.InlineKeyboardButton(text='Group', url='http://vk.com/{url}'.format( url=post.group.url))
+        text = u'<code>{time}</code>\n<b>{group}</b>\n{text}...'.format(time=created_at, group=group, text=post.text[:200])
         keyboard.add(callable_button)
         bot.send_message(message.chat.id, text, reply_markup=keyboard, parse_mode='HTML', disable_web_page_preview=True)
 

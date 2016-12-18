@@ -41,7 +41,7 @@ class Group(Base):
     photo = Column(Unicode(128))
     email = Column(Unicode(62))
     phone = Column(Unicode(12))
-    url = Column( Unicode(50), nullable=True)
+    url = Column( Unicode(50), nullable=True, unique=True)
     desc = Column( Unicode(128))
     
     posts = relationship('Post', backref= backref('group', lazy = 'joined'))
@@ -63,14 +63,16 @@ class Post(Base):
 
     id  = Column( Integer, primary_key = True)
     tstamp = Column( DateTime, default = datetime.utcnow)
-    date = Column('Created',Integer, nullable = False)
-    text = Column( 'Content', Unicode(4096))
-    photos = Column( 'Photo', Unicode(512), nullable = True)
-    group_id =  Column( Integer, ForeignKey('group.id'))
-
+    date = Column('date',Integer, nullable = False)
+    text = Column( 'content', Unicode(4096))
+    photos = Column( 'photo', Unicode(512), nullable = True)
+    group_id =  Column('group', Integer, ForeignKey('group.id'))
+    #UniqueConstraint('date','group', name='uix')
     tags = relationship( 'Tag',
                          secondary = association_table,
                          backref = backref('posts', lazy="joined"))
+
+    
 
     def __repr__(self):
         return "<Post:%s>" % self.text

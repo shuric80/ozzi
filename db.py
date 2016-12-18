@@ -1,5 +1,5 @@
 #-*- coding:utf-8 -*-
-import logging
+from view import logger
 from sqlalchemy.orm import sessionmaker
 import transaction
 
@@ -25,7 +25,8 @@ def mainKeyboard():
 def groupID(id):
     with transaction.manager:
         group = session.query(Group).filter_by(id=id).first()
-    
+
+    session.close()
     return group
 
 
@@ -72,10 +73,12 @@ def postInGroup(group_id, num=0):
     return post
 
 
-def lastPosts():
+def lastPosts(cnt =5):
+    cnt = cnt if 0 < cnt < 10 else 5
     with transaction.manager:
-        posts = session.query(Post).order_by(Post.date.desc()).limit(5)
+        posts = session.query(Post).order_by(Post.date.desc()).limit(cnt)
 
+    session.close()
     return posts
 
 
@@ -84,21 +87,30 @@ def update_db():
    
     groups = session.query(Group)
     for group in groups.all():
-        ext, posts = read_content(group.url)
-        group.description = ext['description']
-        group.photo = ext['photo']
-        group.name = ext['name']
-        group.phone = ext['phone']
-        group.email = ext['email']
-        group.desc = ext['desc']
-        for i in posts:
-            post = Post(
-                text = i['text'],
-                photos = i['photo'][0] if i['photo'] else None,
-                group = group,
-                date = i['date']
-            )
-            session.add(post)
+        vk_group, vk_posts = read_content(group.url)
+
+        group.description = vk_group['description']
+        group.photo = vk_group['photo']
+        group.name = vk_group['name']
+        group.phone = vk_group['phone']
+        group.email = vk_group['email']
+        group.desc = vk_group['desc']
+        for post in vk_posts:
+            if session.query(Post).join(Group). \
+               filter(Post.date == post['date']). \
+               filter(Group.name == vk_group['name']).count()==0:
+                post_db = Post(
+                    text = post['text'],
+                    photos = post['photo'][0] if post['photo'] else None,
+                    group = group,
+                    date = post['date']
+                )
+                session.add(post_db)
+
+            else:
+                logger.debug('Post missed.')
+
+
             
         session.add(group)
 
