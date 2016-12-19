@@ -32,8 +32,7 @@ def groupID(id):
 
 
 def groupAll():
-    with transaction.manager:
-        groups = session.query(Group)
+    groups = session.query(Group)
 
     session.close()
     return groups
@@ -63,8 +62,7 @@ def postUseTag(tag, page = 0):
 
 
 def postInGroup(group_id, num=0):
-    with transaction.manager:
-        post = session.query(Post).join(Post.group) \
+    post = session.query(Post).join(Post.group) \
                .filter(Group.id== group_id) \
                .offset(num) \
                .first() \
@@ -75,44 +73,46 @@ def postInGroup(group_id, num=0):
 
 def lastPosts(cnt =5):
     cnt = cnt if 0 < cnt < 10 else 5
-    with transaction.manager:
-        posts = session.query(Post).order_by(Post.date.desc()).limit(cnt)
+    posts = session.query(Post).order_by(Post.date.desc()).limit(cnt)
 
     session.close()
     return posts
 
+def about(name):
+    group = session.query(Group).filter_by(list_names =name).first()
+    session.close()
+    return group
 
     
 def update_db():
-   
-    groups = session.query(Group)
-    for group in groups.all():
-        vk_group, vk_posts = read_content(group.url)
+    with transaction.manager:
+        groups = session.query(Group)
+        for group in groups.all():
+            vk_group, vk_posts = read_content(group.url)
 
-        group.description = vk_group['description']
-        group.photo = vk_group['photo']
-        group.name = vk_group['name']
-        group.phone = vk_group['phone']
-        group.email = vk_group['email']
-        group.desc = vk_group['desc']
-        for post in vk_posts:
-            if session.query(Post).join(Group). \
-               filter(Post.date == post['date']). \
-               filter(Group.name == vk_group['name']).count()==0:
-                post_db = Post(
-                    text = post['text'],
-                    photos = post['photo'][0] if post['photo'] else None,
-                    group = group,
-                    date = post['date']
-                )
-                session.add(post_db)
+            group.description = vk_group['description']
+            group.photo = vk_group['photo']
+            group.name = vk_group['name']
+            group.phone = vk_group['phone']
+            group.email = vk_group['email']
+            group.desc = vk_group['desc']
+            for post in vk_posts:
+                if session.query(Post).join(Group). \
+                    filter(Post.date == post['date']). \
+                    filter(Group.name == vk_group['name']).count()==0:
+                    post_db = Post(
+                        text = post['text'],
+                        photos = post['photo'][0] if post['photo'] else None,
+                        group = group,
+                        date = post['date']
+                    )
+                    session.add(post_db)
 
-            else:
-                logger.debug('Post missed.')
-
-
-            
-        session.add(group)
-
-    session.commit()
-    session.close()
+                else:
+                    logger.debug('Post missed.')
+           
+            session.add(group)
+            session.commit()
+              
+        session.close()
+        return 1

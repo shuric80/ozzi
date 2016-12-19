@@ -38,9 +38,10 @@ def serializePost(post):
                 photo.append(attach['photo'].get('photo_604'))
 
             elif attach['type'] == 'video':
-                photo.append(attach['video'].get('photo_604'))
+                photo.append(attach['video'].get('photo_640'))
                 title = attach['video']['title']
                 description = attach['video']['description']
+                text = u'Video:{ext}{title}\n{description}'.format(ext=text,title=title, description=description)
 
             else:
                 pass

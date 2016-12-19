@@ -61,9 +61,8 @@ session = Session()
 text = """<strong>Этот бот  новостей по теме социальных танцев.</strong> 
 Он умеет так: 
 /groups - меню по всем группам.
-/last - 5 последних сообщений.
-/about [name] - информация о школе [name].
-/news [tag] - новости по тэгу [tag]
+/last N - N последних сообщений.
+/about NAME - информация о школе [name].
 /help - вывод этого меню.
     """
 
@@ -84,9 +83,13 @@ def main(message):
     keyboard.add(*l_btns)
     bot.send_message(message.chat.id, 'main menu', reply_markup=keyboard, parse_mode='HTML')
 
+
+    
 @bot.message_handler(commands='update')
 def update(message):
-    pass
+    db.update_db()
+    bot.send_message(message.chat.id, 'Done.')
+    logger.debug('Update')
     
     
 @bot.message_handler(commands=['last'])
@@ -94,11 +97,10 @@ def last(message):
     cnt = 5
     if len(message.text.split(' ')) >1:
         try:
-            cnt = int(message.text.split(' ')[1])  if 0 < cnt< 10 else 5 
+            cnt = int(message.text.split(' ')[1]) 
         except ValueError:
             cnt = 5
 
-    #assert(cnt >0 and cnt < 30)
     last_posts = db.lastPosts(cnt)
     button = 'Открыть'
     for post in last_posts:
@@ -117,19 +119,39 @@ def send(call, post, keyboard):
        """
     id = call.message.chat.id
     mid = call.message.message_id
-    created_at = time.strftime("%H:%M %d-%b-%Y",time.localtime(post.date))
+    created_at = time.strftime("%H:%M %d-%b",time.localtime(post.date))
     group = post.group.name
     url = 'http://vk.com/{url}'.format(url=post.group.url)
     
     if post.photos and len(post.text) < 3000:
-        text = u'<code>{time}</code>\n<b>{group}</b>\n{photo}\n{text}'.format(time=created_at, url=url, group=group, text=post.text, photo=post.photos)
+        text = u'<b>{group}</b>  <code>{time}</code>\n{photo}\n{text}'.format(time=created_at, url=url, group=group, text=post.text, photo=post.photos)
     else:
-        text = u'<code>{time}</code>\n<b>{group}</b>\n{text}'.format(time=created_at, group=group, text=post.text[:4000])
+        text = u'<b>{group}</b>  <code>{time}</code>\n{text}'.format(time=created_at, group=group, text=post.text[:4000])
 
     bot.edit_message_text(chat_id=id, message_id=mid, text=text, reply_markup=keyboard, parse_mode="HTML")
     #bot.edit_message_text(chat_id=id,message_id=mid,text='%s \n%s'%(post.photos, post.text), reply_markup=keyboard)
 
+
+
+@bot.message_handler(commands='about')
+def about(message):
     
+    try:
+       name = message.text.split(' ')[1]
+    except IndexError,ValueError:
+        #bot.send_message(message.chat.id,'Ошибка команды. \n/about название')
+        message_start(message)
+        return
+
+    group = db.about(name)
+    if group:
+        text = "{name}\n{photo}\n{phone}\n{description}".format(name=group.name,
+                                                          description=group.description,
+                                                          phone=group.phone,
+        photo = group.photo)
+        bot.send_message(message.chat.id, text)
+    
+
 def sendPost(call, post_id):
     keyboard=None
     post = db.getPost(post_id)

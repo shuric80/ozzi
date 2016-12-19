@@ -7,6 +7,7 @@ from sqlalchemy import Table, Column, Integer,Unicode, DateTime
 from sqlalchemy import ForeignKey, create_engine
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import UniqueConstraint
 
 import config
 if config.DEBUG:
@@ -36,7 +37,7 @@ class Group(Base):
 
     id = Column( Integer, primary_key=True)
     name = Column( Unicode(20), nullable=False)
-    #title = Column(Unicode(20))
+    list_names = Column(Unicode(256))
     description = Column(Unicode(512))
     photo = Column(Unicode(128))
     email = Column(Unicode(62))

@@ -32,6 +32,7 @@ def init_db():
         db_group = Group()
         db_group.name = group['name']
         db_group.url = group['url']
+        db_group.list_names = group['names'][0] if group.get('names') else None
 
         session.add(db_group)
     
