@@ -16,15 +16,13 @@ session = Session()
 
 
 def mainKeyboard():
-    with transaction.manager as t:
-        btns = session.query(Group.id).all()
-        t.note('test')
+    btns = session.query(Group.id).all()
+    t.note('test')
     
     return btns
 
 def groupID(id):
-    with transaction.manager:
-        group = session.query(Group).filter_by(id=id).first()
+    group = session.query(Group).filter_by(id=id).first()
 
     session.close()
     return group
@@ -39,22 +37,19 @@ def groupAll():
 
 
 def tagAll():
-    with transaction.manager:
-        tags = [q[0] for q in session.query(Tag.tag).all()]
+    tags = [q[0] for q in session.query(Tag.tag).all()]
 
     session.close()
     return tags
 
 def getPost(id):
-    with transaction.manager:
-        post = session.query(Post).get(id)
+    post = session.query(Post).get(id)
 
     session.close()
     return post
 
 def postUseTag(tag, page = 0):
-    with transaction.manager:
-        q_posts = session.query(Post).join(Post.tags). \
+     q_posts = session.query(Post).join(Post.tags). \
               filter(Tag.tag == tag).all()
 
     session.close()
