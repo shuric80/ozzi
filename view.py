@@ -1,4 +1,5 @@
 #-*- coding: utf-8  -*-
+
 import logging
 import config
 import telebot
@@ -7,46 +8,52 @@ from shortuuid import uuid
 import time
 
 from telebot import types
-from sqlalchemy.orm import sessionmaker
 
 from models import  engine
-from models import EventMenu, Group, Tag, Post
-
+from models import Group, Post
 import db
 
-
-if config.DEBUG:
-    import sys
-    sys.dont_write_bytecode = True
-    telebot.logger.setLevel(logging.DEBUG)
-
-else:    
-    telebot.logger.setLevel(logging.WARNING)
-
-
 logger = telebot.logger
+telebot.logger.setLevel(logging.DEBUG)
+logger.info('Run view module')
+
 bot  = telebot.TeleBot(config.TOKEN)
 
 
+def main_menu(txt, id, buttons):
+    """
+    set inline keyboard
+    """
+    l_button = []
+
+    for button in buttons:
+        l_button.append( types.InlineKeyboardButton (
+            text = button.label, callback_data = json.dumps(
+                dict( handler=button.handler ))
+        ))
+
+    keyboard = types.InlineKeyboardMarkup(row_width=3)
+    keyboard.add(*l_button)
+    bot.send_message(id, txt, reply_markup = keyboard)
+
+        
 class Session:
+    #create session
     instance = None
-    #create singleton
+
     def __new__(cls):
-        if cls.inctance is None:
+        if cls.instance is None:
             cls = super(C, cls).__new__(cls)
 
         return cls.instance
-
-    def __init__(self):
-        self._d = dict()
 
     @property
     def id(self):
         return uuid()
 
     def add(self,id, d_input):
-        assert(type(d_input == 'dict'))
-        self._d[id] = d_input
+        if isinstanse(d_input, dict):
+            self._d[id] = d_input
 
     def get(self, id):
         return self._d.get(id)
@@ -58,50 +65,37 @@ class Session:
 
 session = Session()
 
-text = """<strong>Этот бот  новостей по теме социальных танцев.</strong> 
-Он умеет так: 
-/groups - меню по всем группам.
-/last N - N последних сообщений.
-/about NAME - информация о школе [name].
-/help - вывод этого меню.
-    """
-
 
 @bot.message_handler(commands=['start','help'])
 def message_start(message):
-    bot.send_message(message.chat.id, text, parse_mode='HTML')
-
-@bot.message_handler(commands=['groups'])
-def main(message):
-    menu = db.groupAll()
-    keyboard = types.InlineKeyboardMarkup(row_width=2)
-    l_btns = list()
-    for btn in menu:
-        callable_button = types.InlineKeyboardButton(text=btn.name.split(' ')[0], callback_data= json.dumps(dict(button=btn.id)))
-        l_btns.append(callable_button)
-
-    keyboard.add(*l_btns)
-    bot.send_message(message.chat.id, 'main menu', reply_markup=keyboard, parse_mode='HTML')
-
-
+    user_markup = None
+    #TODO  тут можно добавить дополнительные кнопки
+    #user_markup = types.ReplyKeyboardHide()
+    #user_markup = types.ReplyKeyboardMarkup(True, True)
+    #user_markup.row('/menu')
+    content = config.HELP
+    bot.send_message(message.chat.id, content, reply_markup=user_markup)
+ 
     
 @bot.message_handler(commands='update')
-def update(message):
-    db.update_db()
-    bot.send_message(message.chat.id, 'Done.')
-    logger.debug('Update')
+def service_command_update(message):
+    secret_cod = "ku"
+    if secret_cod in message:
+        db.update_db()
+        bot.send_message(message.chat.id, 'Done.')
+        logger.debug('Update')
     
-    
+#TODO тут не работает    
 @bot.message_handler(commands=['last'])
-def last(message):
-    cnt = 5
-    if len(message.text.split(' ')) >1:
-        try:
-            cnt = int(message.text.split(' ')[1]) 
-        except ValueError:
-            cnt = 5
-
-    last_posts = db.lastPosts(cnt)
+def send_lasttime_posts(message):
+    cnt = 5 #default value  
+    str_range = map(str, range(1,6)) # '1','2'...'5'
+    l_str_cnt = filter( lambda x: x in message.text, str_range)
+    if l_str_cnt:
+        cnt = int(l_str_cnt[0])
+        
+    last_posts = db.get_last_posts(cnt)
+    
     button = 'Открыть'
     for post in last_posts:
         created_at = time.strftime("%H:%M %d-%b-%Y",time.localtime(post.date))
@@ -132,17 +126,12 @@ def send(call, post, keyboard):
     #bot.edit_message_text(chat_id=id,message_id=mid,text='%s \n%s'%(post.photos, post.text), reply_markup=keyboard)
 
 
-
-@bot.message_handler(commands='about')
-def about(message):
+"""
+@bot.message_handler(commands='description')
+def view_description(message):
     
-    try:
-       name = message.text.split(' ')[1]
-    except IndexError,ValueError:
-        #bot.send_message(message.chat.id,'Ошибка команды. \n/about название')
-        message_start(message)
-        return
-
+    user_name = message.text.
+ 
     group = db.about(name)
     if group:
         text = "{name}\n{photo}\n{phone}\n{description}".format(name=group.name,
@@ -151,28 +140,24 @@ def about(message):
         photo = group.photo)
         bot.send_message(message.chat.id, text)
     
+  """
 
-def sendPost(call, post_id):
+def send_post(call, post_id):
     keyboard=None
-    post = db.getPost(post_id)
+    post = db.get_post_extand(post_id)
     send(call, post, keyboard)
     
 
-def sendDiredPost(call, sid):
+def choose_next_post(call, sid):
+    
     d_session =  session.get(sid)
     assert(d_session)
     group_id = d_session.get('group_id')
     page  = d_session.get('page')
     buttons = ['back', 'forward']
     post = db.postInGroup(group_id, page)
-    if not post:
-        return
-    assert(post)
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keys = list()
-
-    #menu_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard= True)
-    #menu_markup.row('/menu')
 
     for i in buttons:
         btn = types.InlineKeyboardButton(text = str(i), callback_data = json.dumps(dict(id=sid, button=str(i))))
@@ -194,16 +179,10 @@ def callback_data(call):
        """
     if call.message:
         event =json.loads(call.data).get('button')
-        post_id = json.loads(call.data).get('post')
-
-        if post_id:
-            sendPost(call, post_id)
-            return
-        
         assert(event)
-        groups_all = db.groupAll()
-        assert(groups_all)
-        groups_id = [i.id for i in groups_all]
+        q_groups = db.groupAll()
+        groups_id = [i.id for i in q_groups]
+
         if event in groups_id:
             logger.debug('choosed group:%s' % event)
             sid = session.id
@@ -234,7 +213,6 @@ def callback_data(call):
 
         else:
             logger.debug(call.data)
-
             
 if __name__ =='__main__':
     bot.polling(none_stop=True)

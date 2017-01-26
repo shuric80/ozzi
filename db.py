@@ -1,10 +1,9 @@
 #-*- coding:utf-8 -*-
 from view import logger
 from sqlalchemy.orm import sessionmaker
-import transaction
 
 from models import engine
-from models import Post, EventMenu, Tag, Group
+from models import Post, Group
 
 from view import logger
 import config
@@ -15,99 +14,68 @@ Session = sessionmaker(bind = engine)
 session = Session()
 
 
-def mainKeyboard():
-    btns = session.query(Group.id).all()
-    t.note('test')
-    
-    return btns
-
-def groupID(id):
-    group = session.query(Group).filter_by(id=id).first()
-
-    session.close()
-    return group
+def get_post_extand(id):
+    post = session.query(Post).get(id)
+    return post
 
 
-
-def groupAll():
+def get_all_group():
     groups = session.query(Group)
-
-    session.close()
     return groups
 
 
-def tagAll():
-    tags = [q[0] for q in session.query(Tag.tag).all()]
-
-    session.close()
-    return tags
-
-def getPost(id):
-    post = session.query(Post).get(id)
-
-    session.close()
-    return post
-
-def postUseTag(tag, page = 0):
-     q_posts = session.query(Post).join(Post.tags). \
-              filter(Tag.tag == tag).all()
-
-    session.close()
-    return q_posts[page]
-
-
-def postInGroup(group_id, num=0):
-    post = session.query(Post).join(Post.group) \
-               .filter(Group.id== group_id) \
-               .offset(num) \
-               .first() \
-
-    session.close()
-    return post
-
-
-def lastPosts(cnt =5):
+def get_last_posts(cnt =5):
     cnt = cnt if 0 < cnt < 10 else 5
     posts = session.query(Post).order_by(Post.date.desc()).limit(cnt)
-
-    session.close()
     return posts
 
-def about(name):
-    group = session.query(Group).filter_by(list_names =name).first()
-    session.close()
-    return group
 
-    
+def get_describe_group(name):
+    describe = session.query(Group).filter_by(list_names =name).first()
+    return describe
+
+
 def update_db():
-    with transaction.manager:
-        groups = session.query(Group)
-        for group in groups.all():
-            vk_group, vk_posts = read_content(group.url)
 
-            group.description = vk_group['description']
-            group.photo = vk_group['photo']
-            group.name = vk_group['name']
-            group.phone = vk_group['phone']
-            group.email = vk_group['email']
-            group.desc = vk_group['desc']
-            for post in vk_posts:
-                if session.query(Post).join(Group). \
-                    filter(Post.date == post['date']). \
-                    filter(Group.name == vk_group['name']).count()==0:
-                    post_db = Post(
+    groups = session.query(Group)
+    for group in groups.all():
+        vk_group, vk_posts = read_content(group.url)
+        group.description = vk_group['description']
+        group.photo = vk_group['photo']
+        group.name = vk_group['name']
+        group.phone = vk_group['phone']
+        group.email = vk_group['email']
+        group.desc = vk_group['desc']
+        for post in vk_posts:
+            if session.query(Post).join(Group). \
+                filter(Post.date == post['date']). \
+                filter(Group.name == vk_group['name']).count()==0:
+                post_db = Post(
                         text = post['text'],
                         photos = post['photo'][0] if post['photo'] else None,
                         group = group,
                         date = post['date']
                     )
-                    session.add(post_db)
+                session.add(post_db)
 
-                else:
-                    logger.debug('Post missed.')
+            else:
+                logger.debug('Post missed.')
            
-            session.add(group)
-            session.commit()
-              
+        session.add(group)
+
+    try:
+        session.commit()
+    except:
+        session.rollback()
+    finally:       
         session.close()
-        return 1
+
+    return True
+
+    
+def get_post_from_group(group_id, num=0):
+    post = session.query(Post).join(Post.group). \
+             filter(Group.id== group_id)[num]
+    #post = q_post[num] if len(q_post) > num else None
+    return post
+

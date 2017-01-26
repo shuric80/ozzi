@@ -3,6 +3,10 @@ import sys
 sys.dont_write_bytecode = True
 
 import sys
+<<<<<<< Updated upstream
+=======
+import argparse
+>>>>>>> Stashed changes
 import types
 from sqlalchemy.orm import sessionmaker
 from models import engine
@@ -16,6 +20,9 @@ import config
     init - initialize data db
   """
 
+parser = argparse.ArgumentParser(description = 'Create and initialized base.')
+parser.add_argument('-d','--action', default='all', help='One or few actions for database')
+action =  parser.parse_args().action
 
 
 def create_db():
@@ -32,7 +39,10 @@ def init_db():
         db_group = Group()
         db_group.name = group['name']
         db_group.url = group['url']
+<<<<<<< Updated upstream
         db_group.list_names = group['names'][0] if group.get('names') else None
+=======
+>>>>>>> Stashed changes
 
         session.add(db_group)
     
@@ -42,6 +52,7 @@ def init_db():
 def update():
     update_db()
 
+<<<<<<< Updated upstream
 if len(sys.argv)==1:
     create_db()
     init_db()
@@ -57,6 +68,22 @@ elif sys.argv[1] == 'update':
     update_db()
 
     
+=======
+if action == 'create':
+    create_db()
+
+elif action == 'init':
+    init_db()
+
+elif action == 'update':
+    update_db()
+
+elif action == 'all':
+    create_db()
+    init_db()
+    update_db()
+
+>>>>>>> Stashed changes
 else:
     sys.stderr.write('Error argument')
     sys.exit(-1)
