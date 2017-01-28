@@ -1,14 +1,17 @@
 #-*- coding:utf-8 -*-
 from view import logger
 from sqlalchemy.orm import sessionmaker
-
-from init_db import engine
+from sqlalchemy import create_engine
 from models import Post, Group
 
 from view import logger
 import config
 from parser import read_content
+from configobj import ConfigObj
 
+
+config = ConfigObj('alembic.ini')
+engine = create_engine(config['alembic']['sqlalchemy.url'])
 
 Session = sessionmaker(bind = engine)
 session = Session()

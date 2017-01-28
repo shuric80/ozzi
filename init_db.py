@@ -6,8 +6,9 @@ import types
 from sqlalchemy.orm import sessionmaker
 from models import engine
 from models import Group, Post
-#from db import update_db
 import config
+from db import session
+from db import update_db
 
 """
 Use alembic for generate database.
@@ -29,9 +30,7 @@ target_metadata = models.Base.metadata
 
 
 def _save_from_config_in_base():
-    Session = sessionmaker(bind = engine)
-    session = Session()
-    
+
     groups = config.GROUPS
     assert(type(groups) == types.TupleType)
     for group in groups:
@@ -50,12 +49,25 @@ def _save_from_config_in_base():
         session.close()
 
 
+def _migrate_database(name_revision):
+    arg_rev = ' -m {}'.format(name_revision) if name_revision else None 
+    os.system('alembic revision --autogenerate {}'.format(arg_rev))
+    os.system('alembic upgrade head')
 
 cmd = sys.argv[1] if len(sys.argv) >1 else None
 
 if cmd == 'initialize':
     _save_from_config_in_base()
 
+elif cmd == 'update':
+    update_db()
+
+elif cmd == 'migrate':
+    rev = sys.argv[2] if len(sys.argv) >2 else None
+    _migrate_database(rev)
+
+else:
+    sys.stderr.write('Error command\n')
 
 sys.stdout.write('Done')
 sys.exit(0)

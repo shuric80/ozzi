@@ -34,9 +34,7 @@ class Group(Base):
     email = Column(Unicode(62))
     phone = Column(Unicode(12))
     url = Column( Unicode(50), nullable=True, unique=True)
-    #TODO вставить Enum
-    type = Column('type',Enum(*TypeGroup))
-    test = Column(Unicode(1))
+    types = Column('type',Enum(*TypeGroup))
     posts = relationship('Post', backref= backref('group', lazy = 'joined'))
 
     def __repr__(self):
