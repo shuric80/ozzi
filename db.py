@@ -1,6 +1,7 @@
 #-*- coding:utf-8 -*-
 from view import logger
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
+
 from sqlalchemy import create_engine
 from models import Post, Group
 
@@ -13,8 +14,8 @@ from configobj import ConfigObj
 config = ConfigObj('alembic.ini')
 engine = create_engine(config['alembic']['sqlalchemy.url'])
 
-Session = sessionmaker(bind = engine)
-session = Session()
+session_factory = sessionmaker(bind = engine)
+session = scoped_session(session_factory)
 
 
 def get_post_extand(id):

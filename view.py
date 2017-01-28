@@ -176,12 +176,15 @@ def callback_data(call):
     """ callback button
        """
     if call.message:
-        event =json.loads(call.data).get('button')
-        assert(event)
-        q_groups = db.groupAll()
+        event = json.loads(call.data).get('button')
+        id_post = json.loads(call.data).get('post')
+        q_groups = db.get_all_group()
         groups_id = [i.id for i in q_groups]
 
-        if event in groups_id:
+        if id_post:
+            send_post(call, id_post)
+
+        elif event in groups_id:
             logger.debug('choosed group:%s' % event)
             sid = session.id
             session.add(sid, dict(page=0, group_id=event))
