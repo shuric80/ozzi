@@ -3,6 +3,7 @@
 import sys
 from datetime import datetime
 import enum
+from configobj import ConfigObj
 
 from sqlalchemy import Table, Column, \
     Integer,Unicode, \
@@ -13,35 +14,29 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import UniqueConstraint
 
-import config
-if config.DEBUG:
-    import sys
-    sys.dont_write_bytecode = True
 
-engine = create_engine('sqlite:///telegram_bot.db', echo=False)
 Base = declarative_base()
+# rEad url database
+config = ConfigObj('alembic.ini')
+engine = create_engine(config['alembic']['sqlalchemy.url'])
 
+TypeGroup = ['SCHOOL', 'EVENT']
 
-class TypeGroup(enum.Enum):
-    Event = 'E'
-    Inform = 'I'
-    School = 'S'
-    
-    
 class Group(Base):
 
     __tablename__ = 'group'
 
     id = Column( Integer, primary_key=True)
-    title = Column( Unicode(20), nullable=False)
+    title = Column( Unicode(20), unique=True, nullable=False)
+    name = Column(Unicode(30))
     description = Column(Unicode(512))
     photo = Column(Unicode(128))
     email = Column(Unicode(62))
     phone = Column(Unicode(12))
-    url = Column( Unicode(50), nullable=True)
+    url = Column( Unicode(50), nullable=True, unique=True)
     #TODO вставить Enum
-    #type_group = Column('type',Enum(TypeGroup))
-    
+    type = Column('type',Enum(*TypeGroup))
+    test = Column(Unicode(1))
     posts = relationship('Post', backref= backref('group', lazy = 'joined'))
 
     def __repr__(self):

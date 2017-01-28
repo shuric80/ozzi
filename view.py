@@ -9,7 +9,6 @@ import time
 
 from telebot import types
 
-from models import  engine
 from models import Group, Post
 import db
 
@@ -88,11 +87,10 @@ def service_command_update(message):
 #TODO тут не работает    
 @bot.message_handler(commands=['last'])
 def send_lasttime_posts(message):
-    cnt = 5 #default value  
+    #default value  
     str_range = map(str, range(1,6)) # '1','2'...'5'
     l_str_cnt = filter( lambda x: x in message.text, str_range)
-    if l_str_cnt:
-        cnt = int(l_str_cnt[0])
+    cnt = int(l_str_cnt[0]) if l_str_cnt else 5
         
     last_posts = db.get_last_posts(cnt)
     

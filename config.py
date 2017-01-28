@@ -3,21 +3,23 @@
 CNT = 10
 TOKEN = '246271863:AAEUJQJ7aHByov0wnHBjSUGseL1ixU1mSgk'
 DEBUG = True
-
+DATABASE = 'bot.db' 
 GROUPS = (
     {
-        'name':'2mambo',
-        'url':'2mamboproject'
+        'title':'2mambo',
+        'url':'2mamboproject',
+        'type':'S'
     },
     {
-        'name':'mambotime',
-        'url':'mambotime'
+        'title':'mambotime',
+        'url':'mambotime',
+        'type':'S'
     },
     {
-        'name':'Salsa open',
-        'url':'salsaopenmsk'
+        'title':'Salsa open',
+        'url':'salsaopenmsk',
+        'type':'E'
     }
-
 )
 
 #TODO add text for help

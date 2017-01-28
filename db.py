@@ -2,7 +2,7 @@
 from view import logger
 from sqlalchemy.orm import sessionmaker
 
-from models import engine
+from init_db import engine
 from models import Post, Group
 
 from view import logger
