@@ -38,7 +38,7 @@ def get_group(id):
     return q
 
 def get_describe_group(name):
-    q = session.query(Group).filter_by(list_names =name).first()
+    q = session.query(Group).filter_by(title =name).first()
     return q
 
 

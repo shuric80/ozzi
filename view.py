@@ -115,12 +115,12 @@ def send_lasttime_posts(message):
     last_posts = db.get_last_posts(cnt)
     cookie_uuid = cookie_session.id
     cookie_session.add(cookie_uuid, dict(action='POST EXPAND'))
-    button = 'Открыть'
     for post in last_posts:
         created_at = time.strftime("%H:%M %d-%b-%Y",time.localtime(post.date))
         group = post.group.name
-        keyboard = types.InlineKeyboardMarkup(row_width=2)
-        callable_button = types.InlineKeyboardButton(text=button, callback_data=json.dumps(dict(id =cookie_uuid, button=post.id)))
+        keyboard = types.InlineKeyboardMarkup(row_width=3)
+        callable_button = types.InlineKeyboardButton(text='Expand', callback_data=json.dumps(dict(id =cookie_uuid, button=post.id)))
+        description_button = types.InlineKeyboardButton(text='Description', callback_data=json.dumps(dict(action='DESCRIPTION', name=post.group.title)))
         url_button = types.InlineKeyboardButton(text='Group', url='http://vk.com/{url}'.format( url=post.group.url))
         text = u'<code>{time}</code>\n<b>{group}</b>\n{text}...'.format(time=created_at, group=group, text=post.text[:200])
         keyboard.add(callable_button)
@@ -130,7 +130,6 @@ def send_lasttime_posts(message):
 def send(call, post, keyboard):
     """ Send post
        """
-    logger.debug('SEND')
     id = call.message.chat.id
     mid = call.message.message_id
     created_at = time.strftime("%H:%M %d-%b",time.localtime(post.date))
@@ -144,24 +143,20 @@ def send(call, post, keyboard):
 
     #text = post.text[:100] #TODO For debug
     bot.edit_message_text(chat_id=id, message_id=mid, text=text, reply_markup=keyboard, parse_mode="HTML")
-    #bot.edit_message_text(chat_id=id,message_id=mid,text='%s \n%s'%(post.photos, post.text), reply_markup=keyboard)
+ 
 
 
-"""
 @bot.message_handler(commands='description')
 def view_description(message):
     
-    user_name = message.text.
- 
-    group = db.about(name)
+    name = message.text.split(' ')[1] 
+    group = db.get_describe_group(name)
     if group:
-        text = "{name}\n{photo}\n{phone}\n{description}".format(name=group.name,
-                                                          description=group.description,
-                                                          phone=group.phone,
-        photo = group.photo)
-        bot.send_message(message.chat.id, text)
+        text = "<strong>{name}</strong>\n <strong>tel: {phone}</strong>\n {description}\n {photo}".format(name=group.name.encode('utf-8'),
+        description=group.description.encode('utf-8'), photo=group.photo, phone=group.phone)
+        bot.send_message(message.chat.id, text , parse_mode= 'HTML')
     
-  """
+
 
 def send_expanded_post(call, post_id):
     keyboard = None
@@ -200,6 +195,8 @@ def callback_data(call):
        """
     if call.message:
         dict_callback = json.loads(call.data)
+
+            
         cookie_uuid = dict_callback.get('id')
         data_for_session = cookie_session.get(cookie_uuid)
         if data_for_session:
