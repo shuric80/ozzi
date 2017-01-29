@@ -95,11 +95,11 @@ def view_list_groups(message):
     cookie_session.add(uuid_cookie, dict(action='GROUP DETAIL'))
     bot.send_message(message.chat.id, 'List group', reply_markup=keyboard, parse_mode='HTML')
     
-    
+
+#TODO тут доделать
 @bot.message_handler(commands='update')
 def service_command_update(message):
-    secret_cod = "ku"
-    if secret_cod in message:
+    if config.SECRET_COD in message.text:
         db.update_db()
         bot.send_message(message.chat.id, 'Done.')
         logger.debug('Update')
@@ -169,14 +169,13 @@ def send_expanded_post(call, post_id):
     send(call, post, keyboard)
 
     
-#TODO тут чтото с потоками.
 def choose_next_post(call, sid):
    
     d_session =  cookie_session.get(sid)
     group_id = int(d_session.get('group'))
     page  = d_session.get('page')
     logger.debug('choose post\tCOOKIE:{}'.format(sid))
-    buttons = ['back', 'forward']
+    buttons = ['next', 'previous']
     post = db.get_post_from_group(group_id, page)
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keys = list()
@@ -219,12 +218,13 @@ def callback_data(call):
                 page = data_for_session.get('page', 0)
                 group_id = None
             
-                if callback_button == 'FORWARD':
-                    page += 1
+                if callback_button == 'PREVIOUS':
+                    page += 1 if page is not 10 else 0
+                    print page
                     group_id = data_for_session.get('group')
 
-                elif callback_button == 'BACK':
-                    page -= 1
+                elif callback_button == 'NEXT':
+                    page -= 1 if page is not 0 else 0
                     group_id = data_for_session.get('group')
 
                 elif callback_button in ID_GROUPS_ALL:
@@ -233,7 +233,7 @@ def callback_data(call):
 
                 else:
                     logger.debug('ELSE')
-                
+
                 new_cookie = dict(group = group_id, page=page, action='GROUP DETAIL')  
                 cookie_session.add(cookie_uuid, new_cookie)
                 choose_next_post(call, cookie_uuid)

@@ -27,14 +27,14 @@ class Group(Base):
     __tablename__ = 'group'
 
     id = Column( Integer, primary_key=True)
-    title = Column( Unicode(20), unique=True, nullable=False)
-    name = Column(Unicode(30))
-    description = Column(Unicode(512))
-    photo = Column(Unicode(128))
-    email = Column(Unicode(62))
-    phone = Column(Unicode(12))
+    title = Column('title', Unicode(20), unique=True, nullable=False)
+    name = Column('public name', Unicode(30))
+    description = Column('description', Unicode(512))
+    photo = Column('photo_logo', Unicode(128))
+    email = Column('email', Unicode(62))
+    phone = Column('phone', Unicode(12))
     url = Column( Unicode(50), nullable=True, unique=True)
-    types = Column('type',Enum(*TypeGroup))
+    types_group = Column('type_group',Enum(*TypeGroup))
     posts = relationship('Post', backref= backref('group', lazy = 'joined'))
 
     def __repr__(self):
@@ -47,8 +47,8 @@ class Post(Base):
 
     id  = Column( Integer, primary_key = True)
     tstamp = Column( DateTime, default = datetime.utcnow)
-    date = Column('Created',Integer, nullable = False)
-    text = Column( 'Content', Unicode(4096))
-    photos = Column( 'Photo', Unicode(512), nullable = True)
+    date = Column('created',Integer, nullable = False)
+    text = Column( 'content', Unicode(4096))
+    photos = Column( 'photo', Unicode(512), nullable = True)
 
     group_id =  Column( Integer, ForeignKey('group.id'))
