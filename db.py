@@ -19,24 +19,27 @@ session = scoped_session(session_factory)
 
 
 def get_post_extand(id):
-    post = session.query(Post).get(id)
-    return post
+    q = session.query(Post).get(id)
+    return q
 
 
 def get_all_group():
-    groups = session.query(Group)
-    return groups
+    q = session.query(Group)
+    return q
 
 
 def get_last_posts(cnt =5):
     cnt = cnt if 0 < cnt < 10 else 5
-    posts = session.query(Post).order_by(Post.date.desc()).limit(cnt)
-    return posts
+    q = session.query(Post).order_by(Post.date.desc()).limit(cnt)
+    return q
 
+def get_group(id):
+    q = session.query(Group).get(id)
+    return q
 
 def get_describe_group(name):
-    describe = session.query(Group).filter_by(list_names =name).first()
-    return describe
+    q = session.query(Group).filter_by(list_names =name).first()
+    return q
 
 
 def update_db():
