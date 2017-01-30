@@ -70,6 +70,20 @@ class Session:
 cookie_session = Session()
 
 
+def format_text_message(name, post_time, url, content, path_photo = None):
+         stime = time.strftime("%H:%M %d-%b-%Y",time.localtime(post_time))
+         text_pattern = u'<code>{time}</code> \
+         \n<a href=\"http://vk.com.{url}\">{group_name}</a> \
+         \n{content} {path_photo}'.format(
+             time = stime,
+             group_name = name,
+             url = url,
+             content = content,
+             path_photo = path_photo
+         )
+         return text_pattern
+   
+
 @bot.message_handler(commands=['start','help'])
 def message_start(message):
     user_markup = None
@@ -93,7 +107,7 @@ def view_list_groups(message):
 
     keyboard.add(*l_btns)
     cookie_session.add(uuid_cookie, dict(action='GROUP DETAIL'))
-    bot.send_message(message.chat.id, 'List group', reply_markup=keyboard, parse_mode='HTML')
+    bot.send_message(message.chat.id, '<strong>Groups</strong>', reply_markup=keyboard, parse_mode='HTML')
     
 
 #TODO тут доделать
@@ -116,15 +130,14 @@ def send_lasttime_posts(message):
     cookie_uuid = cookie_session.id
     cookie_session.add(cookie_uuid, dict(action='POST EXPAND'))
     for post in last_posts:
-        created_at = time.strftime("%H:%M %d-%b-%Y",time.localtime(post.date))
         group = post.group.name
         keyboard = types.InlineKeyboardMarkup(row_width=3)
         callable_button = types.InlineKeyboardButton(text='Expand', callback_data=json.dumps(dict(id =cookie_uuid, button=post.id)))
         description_button = types.InlineKeyboardButton(text='Description', callback_data=json.dumps(dict(action='DESCRIPTION', name=post.group.title)))
         url_button = types.InlineKeyboardButton(text='Group', url='http://vk.com/{url}'.format( url=post.group.url))
-        text = u'<code>{time}</code>\n<b>{group}</b>\n{text}...'.format(time=created_at, group=group, text=post.text[:200])
         keyboard.add(callable_button)
-        bot.send_message(message.chat.id, text, reply_markup=keyboard, parse_mode='HTML', disable_web_page_preview=True)
+        message_text = format_text_message(url = post.group.url, post_time = post.date, name = post.group.name, content = post.text[:200] )
+        bot.send_message(message.chat.id, message_text, reply_markup=keyboard, parse_mode='HTML', disable_web_page_preview=True)
 
         
 def send(call, post, keyboard):
@@ -132,6 +145,7 @@ def send(call, post, keyboard):
        """
     id = call.message.chat.id
     mid = call.message.message_id
+    """
     created_at = time.strftime("%H:%M %d-%b",time.localtime(post.date))
     group = post.group.title
     url = 'http://vk.com/{url}'.format(url=post.group.url)
@@ -140,9 +154,10 @@ def send(call, post, keyboard):
         text = u'<b>{group}</b>  <code>{time}</code>\n{photo}\n{text}'.format(time=created_at, url=url, group=group, text=post.text, photo=post.photos)
     else:
         text = u'<b>{group}</b>  <code>{time}</code>\n{text}'.format(time=created_at, group=group, text=post.text[:1000])
-
+    """
+    message_start = format_text_message(url=post.group.url, post_time = post.date, name=post.group.name, content=post.text)
     #text = post.text[:100] #TODO For debug
-    bot.edit_message_text(chat_id=id, message_id=mid, text=text, reply_markup=keyboard, parse_mode="HTML")
+    bot.edit_message_text(chat_id=id, message_id=mid, text=message_start, reply_markup=keyboard, parse_mode="HTML")
  
 
 

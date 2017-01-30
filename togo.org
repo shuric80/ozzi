@@ -1,2 +1,10 @@
-* add unlimited text.
-** split caption for image and text
+* Tasks 
+**  Цвета и шрифты в тексте.
+** Парсинг salsa.ru mambotribe
+** добавить like and dislake
+
+
+
+
+
+
