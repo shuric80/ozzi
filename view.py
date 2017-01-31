@@ -6,6 +6,7 @@ import telebot
 import json
 from shortuuid import uuid
 import time
+import re
 
 from telebot import types
 
@@ -69,19 +70,22 @@ class Session:
 
 cookie_session = Session()
 
+pattern = re.compile('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+url_short = "<a href='{url}'>link</a>"
 
-def format_text_message(name, post_time, url, content, path_photo = None):
-         stime = time.strftime("%H:%M %d-%b-%Y",time.localtime(post_time))
-         text_pattern = u'<code>{time}</code> \
-         \n<a href=\"http://vk.com.{url}\">{group_name}</a> \
-         \n{content} {path_photo}'.format(
-             time = stime,
-             group_name = name,
-             url = url,
-             content = content,
-             path_photo = path_photo
+def format_text_message(name, post_time, url, content, photo=" "):
+        stime = time.strftime("%H:%M %d-%b-%Y",time.localtime(post_time))
+        for line in pattern.findall(content):
+            content = content.replace(line, url_short.format(url=line))
+        
+        formated_text = u'<a href=\"http://vk.com.{url}\">{group_name}</a>\n<code>{time}</code>\n{content}\n{photo}'.format(
+            time = stime,
+            group_name = name,
+            url = url,
+            content = content,
+            photo = photo
          )
-         return text_pattern
+        return formated_pattern
    
 
 @bot.message_handler(commands=['start','help'])
@@ -155,7 +159,7 @@ def send(call, post, keyboard):
     else:
         text = u'<b>{group}</b>  <code>{time}</code>\n{text}'.format(time=created_at, group=group, text=post.text[:1000])
     """
-    message_start = format_text_message(url=post.group.url, post_time = post.date, name=post.group.name, content=post.text)
+    message_start = format_text_message(url=post.group.url, post_time = post.date, name=post.group.name, content=post.text, photo=post.photos)
     #text = post.text[:100] #TODO For debug
     bot.edit_message_text(chat_id=id, message_id=mid, text=message_start, reply_markup=keyboard, parse_mode="HTML")
  
