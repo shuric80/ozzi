@@ -7,6 +7,12 @@ import sys
 import os
 
 
+MODEL_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)),"..")
+sys.path.append(MODEL_PATH)
+
+import models
+target_metadata = models.Base.metadata
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

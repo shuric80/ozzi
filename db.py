@@ -10,9 +10,8 @@ import config
 from parser import read_content
 from configobj import ConfigObj
 
+from base import engine, config
 
-config = ConfigObj('alembic.ini')
-engine = create_engine(config['alembic']['sqlalchemy.url'])
 
 session_factory = sessionmaker(bind = engine)
 session = scoped_session(session_factory)
@@ -65,21 +64,20 @@ def update_db():
 
             else:
                 logger.debug('Post missed.')
-           
+
         session.add(group)
 
     try:
         session.commit()
     except:
         session.rollback()
-    finally:       
+    finally:
         session.close()
 
     return True
 
-    
+
 def get_post_from_group(group_id, num = 0):
     post = session.query(Post).join(Post.group). \
              filter(Group.id== group_id)[num]
     return post
-

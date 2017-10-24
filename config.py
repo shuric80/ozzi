@@ -5,23 +5,12 @@ SECRET_COD = 'kuku'
 #TOKEN = '246271863:AAEUJQJ7aHByov0wnHBjSUGseL1ixU1mSgk'
 TOKEN = '163963654:AAGaVG5vMSfZ5nuGV9q5FyGcojW-ShoJR0k'
 DEBUG = True
-DATABASE = 'bot.db' 
+DATABASE = 'bot.db'
 GROUPS = (
     {
         'title':'2mambo',
         'url':'2mamboproject',
-        'type':'S'
     },
-    {
-        'title':'mambotime',
-        'url':'mambotime',
-        'type':'S'
-    },
-    {
-        'title':'Salsa open',
-        'url':'salsaopenmsk',
-        'type':'E'
-    }
 )
 
 #TODO add text for help

@@ -4,11 +4,12 @@ import sys
 import types
 
 from sqlalchemy.orm import sessionmaker
-from models import engine
+from base import engine
 from models import Group, Post
 import config
 from db import session
 from db import update_db
+from log import logger
 
 """
 Use alembic for generate database.
@@ -29,35 +30,40 @@ target_metadata = models.Base.metadata
 """
 
 
-def _save_from_config_in_base():
+def _initial_database():
+    """
+    Create databes and saving group models.
+      """
 
     groups = config.GROUPS
-    assert(type(groups) == types.TupleType)
+
     for group in groups:
         db_group = Group()
         db_group.title = group['title']
         db_group.url = group['url']
-        db_group.type = group['type']
 
         session.add(db_group)
-        
-    try:
+
+        #try:
         session.commit()
-    except:
-        session.rollback()
-    finally:
+        logger.info('Commited.')
+        #except:
+        #session.rollback()
+        #logger.error('Database rollback.')
+        #finally:
         session.close()
+        logger.info('Database close')
 
 
 def _migrate_database(name_revision):
-    arg_rev = ' -m {}'.format(name_revision) if name_revision else None 
+    arg_rev = ' -m {}'.format(name_revision) if name_revision else None
     os.system('alembic revision --autogenerate {}'.format(arg_rev))
     os.system('alembic upgrade head')
 
 cmd = sys.argv[1] if len(sys.argv) >1 else None
 
 if cmd == 'initialize':
-    _save_from_config_in_base()
+    _initial_database()
 
 elif cmd == 'update':
     update_db()
@@ -71,4 +77,3 @@ else:
 
 sys.stdout.write('Done')
 sys.exit(0)
-

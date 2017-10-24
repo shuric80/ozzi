@@ -1,11 +1,6 @@
-* Tasks 
-**  Цвета и шрифты в тексте.
-** Парсинг salsa.ru mambotribe
-** добавить like and dislake
-** Парсить ссылки в тексте и делать их короткими
-
-
-
-
-
-
+* Tasks
+** DONE Цвета и шрифты в тексте.
+** TODO Парсинг salsa.ru mambotribe
+** TODO добавить like and dislake
+** TODO Парсить ссылки в тексте и делать их короткими
+** init_db реализован коряво.
