@@ -1,11 +1,11 @@
 #-*- coding:utf-8 -*-
-from view import logger
+#from view import logger
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 from sqlalchemy import create_engine
 from models import Post, Group
 
-from view import logger
+from log import logger
 import config
 from parser import read_content
 from configobj import ConfigObj

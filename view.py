@@ -1,29 +1,50 @@
-#-*- coding: utf-8  -*-
+# -*- coding: utf-8  -*-
+import logging
 
 import config
 import telebot
 import json
-from shortuuid import uuid
+#from shortuuid import uuid
 import time
-import re
+from flask import Flask, request, abort
+import db
 from telebot import types
-
-from models import Group, Post
 from log import logger
 from session import cookie_session
 
-bot  = telebot.TeleBot(config.TOKEN)
+bot = telebot.TeleBot(config.TOKEN)
+app = Flask(__name__)
+app.debug = True
 
-import db
+@app.route('/bot', methods=['GET', 'HEAD'])
+def webhook():
+    bot.remove_webhook()
+    bot.set_webhook("https://62.109.13.25:8443/bot",  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
+    return '!'
 
-def main_menu(txt, id, buttons):
+
+@app.route('/bot', methods=['POST'])
+def send_message():
+    logger.info('WEBHOOK: HEADERS:{}  BODY:{}'.format(request.headers, request.data))
+
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return ''
+
+    else:
+       logger.error('FAIL HEADERS:{}'.format(request.headers))
+
+
+def main_menu( txt, id, buttons):
     """
     set inline keyboard
     """
     l_button = []
 
     for button in buttons:
-        l_button.append( types.InlineKeyboardButton (
+        l_button.append(types.InlineKeyboardButton (
             text = button.label, callback_data = json.dumps(
                 dict( handler=button.handler ))
         ))
@@ -31,24 +52,6 @@ def main_menu(txt, id, buttons):
     keyboard = types.InlineKeyboardMarkup(row_width=3)
     keyboard.add(*l_button)
     bot.send_message(id, txt, reply_markup = keyboard)
-
-
-pattern = re.compile('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
-url_short = "<a href='{url}'>link</a>"
-
-def format_text_message(name, post_time, url, content, photo=" "):
-        stime = time.strftime("%H:%M %d-%b-%Y",time.localtime(post_time))
-        for line in pattern.findall(content):
-            content = content.replace(line, url_short.format(url=line))
-
-        formated_text = u'<a href=\"http://vk.com.{url}\">{group_name}</a>\n<code>{time}</code>\n{content}\n{photo}'.format(
-            time = stime,
-            group_name = name,
-            url = url,
-            content = content,
-            photo = photo
-         )
-        return formated_pattern
 
 
 @bot.message_handler(commands=['start','help'])
@@ -62,7 +65,7 @@ def message_start(message):
     bot.send_message(message.chat.id, content, reply_markup = user_markup)
 
 
-@bot.message_handler(commands=['groups'])
+@bot.message_handler(commands=['list'])
 def view_list_groups(message):
     all_group_list =  db.get_all_group()
     keyboard = types.InlineKeyboardMarkup(row_width=2)
@@ -74,37 +77,39 @@ def view_list_groups(message):
 
     keyboard.add(*l_btns)
     cookie_session.add(uuid_cookie, dict(action='GROUP DETAIL'))
-    bot.send_message(message.chat.id, '<strong>Groups</strong>', reply_markup=keyboard, parse_mode='HTML')
+    bot.send_message(message.chat.id, '<b>Groups</b>', reply_markup=keyboard, parse_mode='HTML')
 
 
 #TODO тут доделать
-@bot.message_handler(commands='update')
+@bot.message_handler(commands=['update'])
 def service_command_update(message):
     if config.SECRET_COD in message.text:
         db.update_db()
         bot.send_message(message.chat.id, 'Done.')
         logger.debug('Update')
 
+
 #TODO работает
 @bot.message_handler(commands=['last'])
-def send_lasttime_posts(message):
+def send_last_posts(message):
     #default value
     str_range = map(str, range(1,6)) # '1','2'...'5'
     l_str_cnt = filter( lambda x: x in message.text, str_range)
-    cnt = int(l_str_cnt[0]) if l_str_cnt else 5
+    cnt = int(l_str_cnt[0]) if l_str_cnt else 3
 
     last_posts = db.get_last_posts(cnt)
     cookie_uuid = cookie_session.id
-    cookie_session.add(cookie_uuid, dict(action='POST EXPAND'))
+    cookie_session.add(cookie_uuid, dict(action=['POST EXPAND', 'INFO']))
     for post in last_posts:
+        created_at = time.strftime("%H:%M %d-%b-%Y",time.localtime(post.date))
         group = post.group.name
         keyboard = types.InlineKeyboardMarkup(row_width=3)
-        callable_button = types.InlineKeyboardButton(text='Expand', callback_data=json.dumps(dict(id =cookie_uuid, button=post.id)))
-        description_button = types.InlineKeyboardButton(text='Description', callback_data=json.dumps(dict(action='DESCRIPTION', name=post.group.title)))
+        callable_button = types.InlineKeyboardButton(text='Expand', callback_data=json.dumps(dict(id =cookie_uuid, button=post.id , cmd=0)))
+        #description_button = types.InlineKeyboardButton(text='Info', callback_data=json.dumps(dict(id = cookie_uuid, button = post.id, cmd=1)))
         url_button = types.InlineKeyboardButton(text='Group', url='http://vk.com/{url}'.format( url=post.group.url))
+        text = u'<code>{time}</code>\n<b>{group}</b>\n{text}...'.format(time=created_at, group=group, text=post.text[:200])
         keyboard.add(callable_button)
-        message_text = format_text_message(url = post.group.url, post_time = post.date, name = post.group.name, content = post.text[:200] )
-        bot.send_message(message.chat.id, message_text, reply_markup=keyboard, parse_mode='HTML', disable_web_page_preview=True)
+        bot.send_message(message.chat.id, text, reply_markup=keyboard, parse_mode='HTML', disable_web_page_preview=True)
 
 
 def send(call, post, keyboard):
@@ -112,7 +117,6 @@ def send(call, post, keyboard):
        """
     id = call.message.chat.id
     mid = call.message.message_id
-    """
     created_at = time.strftime("%H:%M %d-%b",time.localtime(post.date))
     group = post.group.title
     url = 'http://vk.com/{url}'.format(url=post.group.url)
@@ -121,29 +125,40 @@ def send(call, post, keyboard):
         text = u'<b>{group}</b>  <code>{time}</code>\n{photo}\n{text}'.format(time=created_at, url=url, group=group, text=post.text, photo=post.photos)
     else:
         text = u'<b>{group}</b>  <code>{time}</code>\n{text}'.format(time=created_at, group=group, text=post.text[:1000])
-    """
-    message_start = format_text_message(url=post.group.url, post_time = post.date, name=post.group.name, content=post.text, photo=post.photos)
+
     #text = post.text[:100] #TODO For debug
-    bot.edit_message_text(chat_id=id, message_id=mid, text=message_start, reply_markup=keyboard, parse_mode="HTML")
+    bot.edit_message_text(chat_id=id, message_id=mid, text=text, reply_markup=keyboard, parse_mode="HTML")
 
 
-
-@bot.message_handler(commands='description')
-def view_description(message):
-
-    name = message.text.split(' ')[1]
-    group = db.get_describe_group(name)
-    if group:
-        text = "<strong>{name}</strong>\n <strong>tel: {phone}</strong>\n {description}\n {photo}".format(name=group.name.encode('utf-8'),
-        description=group.description.encode('utf-8'), photo=group.photo, phone=group.phone)
-        bot.send_message(message.chat.id, text , parse_mode= 'HTML')
-
+@bot.message_handler(commands=['info'])
+def view_info(message):
+    name = message.text.split(' ')
+    if len(name) == 2:
+        group = db.get_describe_group(name[1])
+        if group:
+           text = "<strong>{name}</strong>\n <strong>tel: {phone}</strong>\n {description}\n {photo}".format(name=group.name.encode('utf-8'),
+           description=group.description.encode('utf-8'), photo=group.photo, phone=group.phone)
+           bot.send_message(message.chat.id, text , parse_mode= 'HTML')
 
 
 def send_expanded_post(call, post_id):
     keyboard = None
     post = db.get_post_extand(post_id)
     send(call, post, keyboard)
+
+
+def send_info(call, post_id):
+    post  = db.get_post_extand(post_id)
+    group = db.get_describe_group(post.group.title)
+
+    logger.debug('{} {} {}'.format(post_id, post,  group))
+    if group:
+        text = "<strong>{name}</strong>\n <strong>tel: {phone}</strong>\n {info}\n {photo}".format(name=group.name.encode('utf-8'),
+                                      info=group.description.encode('utf-8'), photo=group.photo, phone=group.phone)
+        bot.edit_message_text(chat_id = call.message.chat.id, message_id=call.message.message_id, text=text, parse_mode='HTML')
+
+    else:
+        logger.error('Info at group')
 
 
 def choose_next_post(call, sid):
@@ -156,13 +171,14 @@ def choose_next_post(call, sid):
     post = db.get_post_from_group(group_id, page)
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keys = list()
-
+    logger.debug('PAGE:{}'.format(page))
     for i in buttons:
         btn = types.InlineKeyboardButton(text = str(i), callback_data = json.dumps(dict(id=sid, button=i.upper())))
         keys.append(btn)
 
     group = db.get_group(group_id)
-    keys.append(types.InlineKeyboardButton(text='Goto to group', url='http://vk.com/%s'%group.url))
+    keys.append(types.InlineKeyboardButton(text='Group', url='http://vk.com/%s'%group.url))
+    #keys.append(types.InlineKeyboardButton(text='Info', callable_button = json.dumps(dict(id=sid, button=))))
     keyboard.add(*keys)
 
     if post:
@@ -177,8 +193,6 @@ def callback_data(call):
        """
     if call.message:
         dict_callback = json.loads(call.data)
-
-
         cookie_uuid = dict_callback.get('id')
         data_for_session = cookie_session.get(cookie_uuid)
         if data_for_session:
@@ -187,10 +201,15 @@ def callback_data(call):
             logger.debug('COOKIE:{}'.format(data_for_session))
             logger.debug('CALLBACK_DATA:{}'.format(callback_button))
 
-            if action == 'POST EXPAND':
-                logger.debug('EXPAND')
+            if action == ['POST EXPAND', 'INFO']:
+                cmd = dict_callback.get('cmd')
                 post_id = callback_button
-                send_expanded_post(call, post_id)
+
+                if cmd == 0:
+                    send_expanded_post(call, post_id)
+
+                elif cmd ==1:
+                    send_info(call, post_id)
 
             elif action == 'GROUP DETAIL':
                 ID_GROUPS_ALL = [i.id for i in db.get_all_group()]
@@ -198,7 +217,7 @@ def callback_data(call):
                 group_id = None
 
                 if callback_button == 'PREVIOUS':
-                    page += 1 if page is not 10 else 0
+                    page += 1 if page is not 30 else 0
                     group_id = data_for_session.get('group')
 
                 elif callback_button == 'NEXT':
@@ -220,6 +239,10 @@ def callback_data(call):
             logger.debug(call.data)
 
 
-
 if __name__ =='__main__':
-    bot.polling(none_stop=True)
+    app.run(
+        host = '127.0.0.1',
+        port = 5000,
+        debug=config.DEBUG,
+
+     )

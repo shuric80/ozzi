@@ -1,5 +1,5 @@
 #-*- coding:utf-8 -*-
-
+from shortuuid import uuid
 from log import logger
 
 class Session:
