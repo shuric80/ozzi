@@ -42,6 +42,7 @@ def get_describe_group(name):
 
 
 def update_db():
+    ## update data in database
 
     groups = session.query(Group)
     for group in groups:
@@ -52,8 +53,11 @@ def update_db():
         group.phone = vk_group['phone']
         group.email = vk_group['email']
         group.desc = vk_group['desc']
+
         for post in vk_posts:
-            if session.query(Post).join(Group).filter(Post.date == post['date']).filter(Group.name == vk_group['name']).count()==0:
+            if session.query(Post).join(Group) \
+                .filter(Post.date == post['date']) \
+                .filter(Group.name == vk_group['name']).count()==0:
                 post_db = Post(
                         text = post['text'],
                         photos = post['photo'][0] if post['photo'] else None,

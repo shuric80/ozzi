@@ -44,15 +44,15 @@ def _initial_database():
 
         session.add(db_group)
 
-        #try:
-        session.commit()
-        logger.info('Commited.')
-        #except:
-        #session.rollback()
-        #logger.error('Database rollback.')
-        #finally:
-        session.close()
-        logger.info('Database close')
+        try:
+             session.commit()
+             logger.info('Commited.')
+        except:
+             session.rollback()
+             logger.error('Database rollback.')
+        finally:
+             session.close()
+             logger.info('Database close')
 
 
 def _migrate_database(name_revision):

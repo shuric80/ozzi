@@ -11,23 +11,23 @@ import json
 
 
 URL = 'https://api.vk.com/method/wall.get'
-
+TOKEN = config.VK_TOKEN
 CNT = config.CNT
 
 def request_posts(domain, ext=False):
-    params = dict(domain=domain, v=5.3, count=CNT, filter='owner', extended =1, fields= 'description,contacts')
+    params = dict(domain=domain, v=5.68, count=CNT, filter='owner', extended =1, fields= 'description,contacts', access_token = TOKEN)
     res = requests.get(URL, params=params)
     return res.text
 
 def serializePost(post):
     text = post['text']
     date = post['date']
-    
+
     photo = list()
     video = list()
     attachments = post.get('attachments')
     if attachments:
-    
+
         for attach in attachments:
             if attach['type'] == 'photo':
                 photo.append(attach['photo'].get('photo_604'))
@@ -43,13 +43,13 @@ def serializePost(post):
 
     return dict(text=text, date=date, photo = photo)
 
-    
+
 def read_content(url_address):
     l_ret = list()
     ret = request_posts(url_address)
     j_posts = json.loads(ret)
     groups = j_posts['response'].get('groups')
-  
+
     if groups:
         ext = dict(
                     name = groups[0]['name'],
@@ -59,7 +59,7 @@ def read_content(url_address):
             email = groups[0]['contacts'][0].get('email'),
             desc = groups[0]['contacts'][0].get('desc'),
                               )
-        
+
     for post in j_posts['response']['items']:
         if post['post_type'] == 'post':
             d_post = serializePost(post)
