@@ -14,7 +14,7 @@ from session import cookie_session
 
 bot = telebot.TeleBot(config.TOKEN)
 app = Flask(__name__)
-app.debug = True
+#app.debug = True
 
 @app.route('/bot', methods=['GET', 'HEAD'])
 def webhook():

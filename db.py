@@ -12,7 +12,6 @@ from configobj import ConfigObj
 
 from base import engine, config
 
-
 session_factory = sessionmaker(bind = engine)
 session = scoped_session(session_factory)
 
@@ -21,13 +20,11 @@ def get_post_extand(id):
     q = session.query(Post).get(id)
     return q
 
-
 def get_all_group():
     q = session.query(Group)
     return q
 
-
-def get_last_posts(cnt =5):
+def get_last_posts(cnt = 5):
     cnt = cnt if 0 < cnt < 10 else 5
     q = session.query(Post).order_by(Post.date.desc()).limit(cnt)
     return q
@@ -40,45 +37,50 @@ def get_describe_group(name):
     q = session.query(Group).filter_by(title =name).first()
     return q
 
+def add_group(l_input):
+    groups = get_all_group()
+    for url in l_input:
+        if url not in list(map(lambda x:x.url, groups)):
+            group = Group()
+            group.url = url
 
-def update_db():
-    ## update data in database
-
-    groups = session.query(Group)
-    for group in groups:
-        vk_group, vk_posts = read_content(group.url)
-        group.description = vk_group['description']
-        group.photo = vk_group['photo']
-        group.name = vk_group['name']
-        group.phone = vk_group['phone']
-        group.email = vk_group['email']
-        group.desc = vk_group['desc']
-
-        for post in vk_posts:
-            if session.query(Post).join(Group) \
-                .filter(Post.date == post['date']) \
-                .filter(Group.name == vk_group['name']).count()==0:
-                post_db = Post(
-                        text = post['text'],
-                        photos = post['photo'][0] if post['photo'] else None,
-                        group = group,
-                        date = post['date']
-                    )
-                session.add(post_db)
-
-            else:
-                logger.debug('Post missed.')
-
-        session.add(group)
+            session.add(group)
 
     try:
         session.commit()
     except:
         session.rollback()
     finally:
+        logger.error('Database uncommited')
         session.close()
 
-    return True
+
+
+def update_db(d_input):
+    ## update data in database
+     for url, content in d_input.items():
+        for post in content['posts']:
+            if session.query(Post).join(Group).filter(Post.date == post['date']) \
+                .filter(Group.url == url).count()==0:
+
+                post_db = Post(
+                        text = post['text'],
+                        photos = post['photo'][0] if post['photo'] else None,
+                        group = group,
+                        date = post['date']
+                    )
+
+                session.add(post_db)
+            else:
+                logger.debug('Post missed.')
+
+    try:
+        session.commit()
+    except:
+        session.rollback()
+        logger.error('Database uncommit')
+    finally:
+        session.close()
 
 
 def get_post_from_group(group_id, num = 0):
