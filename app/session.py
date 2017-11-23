@@ -9,15 +9,23 @@ class Session:
 
     def __init__(self):
         logger.info('Session object created.')
+        logger.info('')
         self._d = dict()
 
     @property
     def id(self):
-        return uuid()
+        id = uuid()
+p       self._d[id] = dict()
+        return id
+
 
     def add(self,id, d_input):
         #if isinstance(d_input, dict) and isinstance(id, str):
         logger.debug('Session add: {id} : {data}'.format(id=id, data=d_input))
+        if id not in self._d:
+            logger.error('Session ID unavailable')
+            return
+
         self._d[id] = d_input
 
     def get(self, id):
