@@ -14,10 +14,12 @@ URL = 'https://api.vk.com/method/wall.get'
 TOKEN = config.VK_TOKEN
 CNT = config.CNT
 
+
 def request_posts(domain, ext=False):
     params = dict(domain=domain, v=5.68, count=CNT, filter='owner', extended =1, fields= 'description,contacts', access_token = TOKEN)
     res = requests.get(URL, params=params)
     return res.text
+
 
 def serializePost(post):
     text = post['text']
