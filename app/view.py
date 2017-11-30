@@ -12,85 +12,50 @@ from app.log import logger
 from app.top import bot, app
 
 
-class StateMenu:
-    def __init__(self, message):
-        self.message = message
-        self.l_state = list()
-        self.l_buttons = list()
+class StateUserMenu:
+    def __init__(self, msg):
+        self.message = msg
         self.keyboard = None
-        self.n_rows = 3
-        self._on_keybord = False
         self.text = None
-        self.mode = 'HTML'
-
-    def set(self, state):
-        self.l_state.append(state.upper())
-        self._on_keybord = False
-
-    @property
-    def keyboard(self):
-        if not self._on_keybord:
-            return
-
-        self._keyboard(row_width = self._n_rows)
-        self._keyboard.add(*self.l_buttons) if self.l_button else None
-
-        return self._keybord
-
-    @keyboard.setter
-    def keyboard(self, keyboard):
-        if isinstance(keyboard, 'InlineKeyboardButton'):
-            self.keyboard = keyboard
-
-        else:
-            logger.error('Keybord is not correct type:{}'.format(type(keyboard)))
-
-    def add_button(self, text, callback_data):
-        #for btn in l_input:
-        button = types.InlineKeyboardButton(text = text)
-        button.callback_data = json.dumps(callback_data)
-        self.l_buttons.append(button)
+        self.n_rows = 3
+        self.mode = None
 
 
-def send(state):
-    """ send message from user
+def sendToUser(state_user):
+    """ send message to user
           """
-    id = state.message.chat.id
-    keyboard = state.keyboard
-    mode = state.mode
-    text = state.text
+    id = state_user.message.chat.id
+    keyboard = state_user.keyboard
+    mode = state_user.mode
+    text = state_user.text
     bot.send_message(id, text, reply_markup = keyboard, parse_mode = mode)
 
 
 @bot.message_handler(commands=['start','help'])
 def message_start(message):
-    state = StateMenu(message)
-    state.set('MAIN')
-    #user_markup = None
-    #TODO  тут можно добавить дополнительные кнопки
-    #user_markup = types.ReplyKeyboardHide()
-    #user_markup = types.ReplyKeyboardMarkup(True, True)
-    #user_markup.row('/menu')
-    state.text = config.HELP
-    send(state)
+    state_user = StateUserMenu(message)
+    state_user.mode = 'MAIN'
+    state_user.text = config.HELP
+
+    sendToUser(state)
 
 
 
 @bot.message_handler(commands=['list'])
 def view_list_groups(message):
-    all_group_list =  db.get_all_group()
-    state = StateMenu(message)
-    state.keyboard = types.InlineKeyboardMarkup
-    state.n_rows = 2
+    l_groups =  db.get_all_group()
+    uuid_cookie = cookie_session.id
+    l_buttons = [ types.InlineKeyboardButton( text= btn.title, callback_data= json.dumps(dict(id = uuid_cookie, button=btn.id))) for btn in l_groups]
 
-    #uuid_cookie = cookie_session.id
-    uuid_cookie = 1
-    for btn in all_group_list:
-        state.add_button(btn.title, dict(id = uuid_cookie, button=btn.id))
+    state_user = StateUserMenu(message)
+    state_user.keyboard = types.InlineKeyboardMarkup(n_rows=2)
+    state_user.keyboard.add(*l_buttons)
+    state_user.n_rows = 2
+    state_user.parse_mode = 'HTML'
+    state_user.state = 'LIST GROUP'
 
     #cookie_session.add(uuid_cookie, dict(action='GROUP DETAIL'))
-    #bot.send_message(message.chat.id, '<b>Groups</b>', reply_markup=keyboard, parse_mode='HTML')
-    send(state)
+    sendToUser(state_user)
 
 
 # #TODO тут доделать
@@ -103,26 +68,27 @@ def view_list_groups(message):
 
 
 # #TODO работает
-# @bot.message_handler(commands=['last'])
-# def send_last_posts(message):
-#     #default value
-#     str_range = map(str, range(1,6)) # '1','2'...'5'
-#     l_str_cnt = filter( lambda x: x in message.text, str_range)
-#     cnt = int(l_str_cnt[0]) if l_str_cnt else 3
+@bot.message_handler(commands=['last'])
+def send_last_posts(message):
+    # Get input param  count posts. Default value = 3
+    # Converted int -> str
+    str_range = map(str, range(1,6)) # '1','2'...'5'
+    l_str_cnt = filter( lambda x: x in message.text, str_range)
+    cnt = int(l_str_cnt[0]) if l_str_cnt else 3
 
-#     last_posts = db.get_last_posts(cnt)
-#     cookie_uuid = cookie_session.id
-#     cookie_session.add(cookie_uuid, dict(action=['POST EXPAND', 'INFO']))
-#     for post in last_posts:
-#         created_at = time.strftime("%H:%M %d-%b-%Y",time.localtime(post.date))
-#         group = post.group.name
-#         keyboard = types.InlineKeyboardMarkup(row_width=3)
-#         callable_button = types.InlineKeyboardButton(text='Expand', callback_data=json.dumps(dict(id =cookie_uuid, button=post.id , cmd=0)))
-#         #description_button = types.InlineKeyboardButton(text='Info', callback_data=json.dumps(dict(id = cookie_uuid, button = post.id, cmd=1)))
-#         url_button = types.InlineKeyboardButton(text='Group', url='http://vk.com/{url}'.format( url=post.group.url))
-#         text = u'<code>{time}</code>\n<b>{group}</b>\n{text}...'.format(time=created_at, group=group, text=post.text[:200])
-#         keyboard.add(callable_button)
-#         bot.send_message(message.chat.id, text, reply_markup=keyboard, parse_mode='HTML', disable_web_page_preview=True)
+    last_posts = db.get_last_posts(cnt)
+    cookie_uuid = cookie_session.id
+    cookie_session.add(cookie_uuid, dict(action=['POST EXPAND', 'INFO']))
+    for post in last_posts:
+        created_at = time.strftime("%H:%M %d-%b-%Y",time.localtime(post.date))
+        group = post.group.name
+        keyboard = types.InlineKeyboardMarkup(row_width=3)
+        callable_button = types.InlineKeyboardButton(text='Expand', callback_data=json.dumps(dict(id =cookie_uuid, button=post.id , cmd=0)))
+        #description_button = types.InlineKeyboardButton(text='Info', callback_data=json.dumps(dict(id = cookie_uuid, button = post.id, cmd=1)))
+        url_button = types.InlineKeyboardButton(text='Group', url='http://vk.com/{url}'.format( url=post.group.url))
+        text = u'<code>{time}</code>\n<b>{group}</b>\n{text}...'.format(time=created_at, group=group, text=post.text[:200])
+        keyboard.add(callable_button)
+        bot.send_message(message.chat.id, text, reply_markup=keyboard, parse_mode='HTML', disable_web_page_preview=True)
 
 
 # def send(call, post, keyboard):
