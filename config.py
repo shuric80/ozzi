@@ -6,10 +6,11 @@ SECRET_COD = 'kuku'
 TOKEN = '163963654:AAGaVG5vMSfZ5nuGV9q5FyGcojW-ShoJR0k'
 VK_TOKEN = '54cbe13354cbe13354cbe1334054975dd8554cb54cbe1330d8ffa0ce43119178d2f7ead'
 DEBUG = True
+TESTING = True
 DATABASE = 'bot.db'
 GROUPS = (
     {
-        'title':'2mambo',
+        'name':'2mambo',
         'url':'2mamboproject',
     },
 )

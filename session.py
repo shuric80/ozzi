@@ -1,30 +1,27 @@
 #-*- coding:utf-8 -*-
-from shortuuid import uuid
+import shortuuid
+import json
+import redis
 from log import logger
 
-class Session:
+class UserSessionRedis:
     """
      Class singleton for cookie-session on server.
       """
 
-    def __init__(self):
+    __slots__ = ['connection', 'id']
+
+    def __init__(self, id = None):
         logger.info('Session object created.')
-        self._d = dict()
+        self.connection = None
+        self.id = shortuuid.uuid() if not id else id
+        self.initialize()
 
-    @property
-    def id(self):
-        return uuid()
+    def initialize(self):
+        self.connection = redis.StrictRedis(host='localhost', port =6379, db =0)
 
-    def add(self,id, d_input):
-        #if isinstance(d_input, dict) and isinstance(id, str):
-        logger.debug('Session add: {id} : {data}'.format(id=id, data=d_input))
-        self._d[id] = d_input
+    def add(self, d_input):
+        self.connection.hmset(self.id, d_input)
 
     def get(self, id):
-        return self._d.get(id)
-
-    def __repr__(self):
-        return '<>'.format(self._d)
-
-
-cookie_session = Session()
+        return self.connection.hgetall(id)

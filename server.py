@@ -3,12 +3,13 @@ import logging
 from flask import Flask
 import telebot
 import config
+from log import logger
 
 app = Flask(__name__)
 app.debug = config.DEBUG
 
 bot = telebot.TeleBot(config.TOKEN)
-telebot.logger.setLevel(logging.DEBUG)
+
 
 from view import *
 
