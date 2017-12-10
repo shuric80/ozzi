@@ -59,7 +59,7 @@ def edit_message(call, post, keyboard):
     id = call.message.chat.id
     mid = call.message.message_id
     created_at = time.strftime("%H:%M %d-%b",time.localtime(post.date))
-    group = post.group.title
+    group = post.group.name
     ## add url in post
     url = 'http://vk.com/{url}'.format(url=post.group.url)
 
@@ -92,7 +92,7 @@ def send_expanded_post(call, post_id):
 
 def send_info(call, post_id):
     post  = db.get_post_extand(post_id)
-    group = db.get_describe_group(post.group.title)
+    group = db.get_describe_group(post.group.name)
 
     logger.debug('{} {} {}'.format(post_id, post,  group))
     if group:

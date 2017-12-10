@@ -7,4 +7,4 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 config = ConfigObj('alembic.ini')
-engine = create_engine(config['alembic']['sqlalchemy.url'], echo = True)
+engine = create_engine(config['alembic']['sqlalchemy.url'], echo = False)

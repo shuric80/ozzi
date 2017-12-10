@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-CNT = 20
+CNT = 1
 SECRET_COD = 'kuku'
 #TOKEN = '246271863:AAEUJQJ7aHByov0wnHBjSUGseL1ixU1mSgk'
 TOKEN = '163963654:AAGaVG5vMSfZ5nuGV9q5FyGcojW-ShoJR0k'

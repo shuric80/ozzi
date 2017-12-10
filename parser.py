@@ -15,11 +15,14 @@ TOKEN = config.VK_TOKEN
 CNT = config.CNT
 
 def request_posts(domain, ext=False):
+    ## do request to vk.com
     params = dict(domain=domain, v=5.68, count=CNT, filter='owner', extended =1, fields= 'description,contacts', access_token = TOKEN)
     res = requests.get(URL, params=params)
     return res.text
 
-def serializePost(post):
+
+def serialize_vk_post(post):
+    ## serialize post from vk
     text = post['text']
     date = post['date']
 
@@ -44,7 +47,7 @@ def serializePost(post):
     return dict(text=text, date=date, photo = photo)
 
 
-def read_content(url_address):
+def read_vk_content(url_address):
     l_ret = list()
     ret = request_posts(url_address)
     j_posts = json.loads(ret)
@@ -62,11 +65,11 @@ def read_content(url_address):
 
     for post in j_posts['response']['items']:
         if post['post_type'] == 'post':
-            d_post = serializePost(post)
+            d_post = serialize_vk_post(post)
             l_ret.append(d_post)
 
         elif post['post_type'] == 'copy':
-            d_post =serializePost( post['copy_history'][0])
+            d_post =serialize_vk_post( post['copy_history'][0])
             l_ret.append(d_post)
 
     return ext, l_ret

@@ -18,8 +18,7 @@ class Group(Base):
     __tablename__ = 'group'
 
     id = Column( Integer, primary_key=True)
-    public_name = Column('name', Unicode(20), unique=True, nullable=False)
-    #name = Column('public name', Unicode(30))
+    name = Column('name', Unicode(20), unique=True, nullable=False)
     description = Column('description', Unicode(512))
     photo = Column('photo_logo', Unicode(128))
     email = Column('email', Unicode(62))
@@ -28,7 +27,7 @@ class Group(Base):
     posts = relationship('Post', backref= backref('group', lazy = 'joined'))
 
     def __repr__(self):
-        return '<Group:%s>' % self.public_name
+        return '<Group:%s>' % self.name
 
 
 class Post(Base):
