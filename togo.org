@@ -1,2 +1,5 @@
 * add unlimited text.
 ** split caption for image and text
+* <2017-12-18 Пн> Отладить работу с cookie-redis.
+* Переписать тест для базы данных.
+* Celery для обновление бд.

@@ -9,19 +9,25 @@ class UserSessionRedis:
      Class singleton for cookie-session on server.
       """
 
-    __slots__ = ['connection', 'id']
+    __slots__ = ['connection']
 
-    def __init__(self, id = None):
+    def __init__(self):
         logger.info('Session object created.')
         self.connection = None
-        self.id = shortuuid.uuid() if not id else id
         self.initialize()
+
+    @property
+    def id(self):
+        return shortuuid.uuid()
 
     def initialize(self):
         self.connection = redis.StrictRedis(host='localhost', port =6379, db =0)
 
-    def add(self, d_input):
-        self.connection.hmset(self.id, d_input)
+    def add(self, id, d_input):
+        logger.debug('ADD:{} {}'.format(id, d_input))
+        self.connection.hmset(id, d_input)
 
     def get(self, id):
-        return self.connection.hgetall(id)
+        logger.debug('GET:{}'.format(id))
+        d = self.connection.hgetall(id)
+        return dict((k.decode('utf-8'), v.decode('utf-8')) for k,v in d.items())

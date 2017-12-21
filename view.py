@@ -10,6 +10,8 @@ from log import logger
 from custom_keybords import keyboard_last_posts, keyboard_list_groups, keyboard_next_page
 import config
 
+cookie = UserSessionRedis()
+
 
 @bot.message_handler(commands=['start','help'])
 def message_start(message):
@@ -26,10 +28,9 @@ def view_list_groups(message):
     """ View list groups. Create cookie
       """
     group_list =  db.get_all_group()
-    cookie = UserSessionRedis()
-    keyboard = keyboard_list_groups(group_list, cookie.id)
-
-    cookie.add( dict(action='GROUP DETAIL'))
+    id = cookie.id
+    keyboard = keyboard_list_groups(group_list, id)
+    cookie.add(id, dict(action='GROUP DETAIL'))
     bot.send_message(message.chat.id, '<b>Groups</b>', reply_markup=keyboard, parse_mode='HTML')
 
 
@@ -41,7 +42,6 @@ def send_last_posts(message):
     l_str_cnt = list(filter( lambda x: x in message.text, str_range))
     cnt = int(l_str_cnt[0]) if l_str_cnt else 3
 
-    cookie = UserSessionRedis()
     cookie.add(dict(action=['POST EXPAND', 'INFO']))
 
     last_posts = db.get_last_posts(cnt)
@@ -166,7 +166,7 @@ def callback_data(call):
                     logger.debug('ELSE')
 
                 new_cookie = dict(group = group_id, page=page, action='GROUP DETAIL')
-                cookie_session.add(cookie_uuid, new_cookie)
+                cookie.add(cookie_uuid, new_cookie)
                 choose_next_post(call, cookie_uuid)
 
         else:
