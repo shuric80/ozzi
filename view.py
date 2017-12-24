@@ -42,11 +42,12 @@ def send_last_posts(message):
     l_str_cnt = list(filter( lambda x: x in message.text, str_range))
     cnt = int(l_str_cnt[0]) if l_str_cnt else 3
 
-    cookie.add(dict(action=['POST EXPAND', 'INFO']))
+    sid = cookie.id
+    cookie.add(sid, dict(action='POST EXPAND'))
 
     last_posts = db.get_last_posts(cnt)
     for post in last_posts:
-        keyboard = keyboard_last_posts(post, cookie.id)
+        keyboard = keyboard_last_posts(post, sid)
         group = post.group.name
         created_at = time.strftime("%H:%M %d-%b-%Y",time.localtime(post.date))
         text = u'<code>{time}</code>\n<b>{group}</b>\n{text}...'.format(time=created_at, group=group, text=post.text[:200])
@@ -110,17 +111,19 @@ def send_info(call, post_id):
 def choose_next_post(call, sid):
     ## user click next or prev post.
 
-    d_session =  cookie_session.get(sid)
+    d_session =  cookie.get(sid)
     group_id = int(d_session.get('group'))
-    page  = d_session.get('page')
-    logger.debug('choose post\tCOOKIE:{}'.format(sid))
+    page  = int(d_session.get('page'))
     post = db.get_post_from_group(group_id, page)
-    keyboard = keyboard_next_page(q, id)
+    group = db.get_group(group_id)
+    keyboard = keyboard_next_page(group, sid)
+
 
     if post:
-          edit_message(call, post, keyboard)
+        edit_message(call, post, keyboard)
+
     else:
-        logger.debug('Post no found:')
+         logger.debug('Post no found:')
 
 
 @bot.callback_query_handler(func=lambda call:True)
@@ -131,12 +134,15 @@ def callback_data(call):
         dict_callback = json.loads(call.data)
         cookie_uuid = dict_callback.get('id')
         data_for_session = cookie.get(cookie_uuid)
+        logger.debug('COOKIE BODY:{}'.format(data_for_session))
 
         if data_for_session:
             action = data_for_session.get('action')
             callback_button = dict_callback.get('button')
+            logger.debug('ACTION:{} '.format(action))
 
-            if action == ['POST EXPAND', 'INFO']:
+            if action == 'POST EXPAND':
+                logger.debug('POST EXPAND')
                 cmd = dict_callback.get('cmd')
                 post_id = callback_button
 

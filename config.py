@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
-CNT = 1
+CNT = 10
+SESSION_TIME = 180
 SECRET_COD = 'kuku'
 #TOKEN = '246271863:AAEUJQJ7aHByov0wnHBjSUGseL1ixU1mSgk'
 TOKEN = '163963654:AAGaVG5vMSfZ5nuGV9q5FyGcojW-ShoJR0k'
@@ -13,6 +14,10 @@ GROUPS = (
         'name':'2mambo',
         'url':'2mamboproject',
     },
+    {
+        'name':'salsa jem',
+     'url':'salsa_jam'
+    }
 )
 
 #TODO add text for help

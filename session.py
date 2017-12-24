@@ -3,6 +3,7 @@ import shortuuid
 import json
 import redis
 from log import logger
+import config
 
 class UserSessionRedis:
     """
