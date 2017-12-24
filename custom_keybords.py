@@ -3,6 +3,8 @@
 import time
 import json
 from telebot import types
+from log import logger
+
 
 def keyboard_list_groups(q, id):
     keyboard = types.InlineKeyboardMarkup(row_width=2)
@@ -27,15 +29,14 @@ def keyboard_last_posts(post, id):
     return keyboard
 
 
-def keyboard_next_page( id):
+def keyboard_next_page(group, sid):
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keys = list()
-    logger.debug('PAGE:{}'.format(page))
     for i in ['next', 'previous']:
-        btn = types.InlineKeyboardButton(text = str(i), callback_data = json.dumps(dict(id=id, button=i.upper())))
+        btn = types.InlineKeyboardButton(text = str(i), callback_data = json.dumps(dict(id=sid, button=i.upper())))
         keys.append(btn)
 
-    group = db.get_group(group_id)
+    #group = db.get_group(group_id)
     keys.append(types.InlineKeyboardButton(text='Group', url='http://vk.com/%s'%group.url))
     keyboard.add(*keys)
 

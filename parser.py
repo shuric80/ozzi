@@ -53,15 +53,18 @@ def read_vk_content(url_address):
     j_posts = json.loads(ret)
     groups = j_posts['response'].get('groups')
 
+    phone = groups[0]['contacts'][0].get('phone') if groups[0]['contacts'] else None
+    email = groups[0]['contacts'][0].get('email') if groups[0]['contacts'] else None
+    desc = groups[0]['contacts'][0].get('desc') if groups[0]['contacts'] else None
+
     if groups:
         ext = dict(
                     name = groups[0]['name'],
                     description = groups[0]['description'],
                     photo = groups[0]['photo_100'],
-                    phone = groups[0]['contacts'][0].get('phone'),
-            email = groups[0]['contacts'][0].get('email'),
-            desc = groups[0]['contacts'][0].get('desc'),
-                              )
+                    phone = phone,
+            email = email,
+            desc = desc )
 
     for post in j_posts['response']['items']:
         if post['post_type'] == 'post':

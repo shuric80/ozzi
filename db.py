@@ -66,21 +66,22 @@ def update_db(group, d_input):
 
     status = True
     try:
-         session.commit()
+        session.commit()
     except exc.SQLAlchemyError as e:
-         logger.error(e)
-         session.rollback()
-         status = False
+          logger.error(e)
+          session.rollback()
+          status = False
     finally:
-         session.close()
+        #session.close()
+        pass
 
     return status
 
 
 def get_post_from_group(group_id, num = 0):
+    logger.debug('GROUP:{} NUM:{}'.format(group_id, num))
     ## for group.id return post with offset num
-    post = session.query(Post).join(Post.group). \
-             filter(Group.id== group_id)[num]
+    post = session.query(Post).join(Post.group).filter(Group.id== group_id)[num]
     return post
 
 
@@ -92,6 +93,7 @@ def add_groups(l_input):
     for group in l_input:
         if group['url'] not in l_name_groups:
             db_group = Group()
+            db_group.name = group['name']
             db_group.url = group['url']
             session.add(db_group)
 
@@ -129,6 +131,7 @@ def update_description_group(group, d_input):
          session.rollback()
          status = False
     finally:
-         session.close()
+        #session.close()
+        pass
 
     return status

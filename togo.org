@@ -1,5 +1,7 @@
 * add unlimited text.
 ** split caption for image and text
-* <2017-12-18 Пн> Отладить работу с cookie-redis.
+* DONE <2017-12-18 Пн> Отладить работу с cookie-redis.
+  CLOSED: [2017-12-22 Пт 00:13]
 * Переписать тест для базы данных.
 * Celery для обновление бд.
+* Невсегда корректно парсит. например 2mambo. No shit  19:18 28-Nov Это перепост.

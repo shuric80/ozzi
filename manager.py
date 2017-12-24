@@ -29,7 +29,7 @@ from log import logger
         """
 
 parser = argparse.ArgumentParser(description='Initialize database')
-parser.add_argument('cmd', choices=['update'])
+parser.add_argument('cmd', choices=['update','addgroup'])
 args = parser.parse_args()
 
 def update_posts():
@@ -51,12 +51,14 @@ def add_groups():
 
 if __name__ == '__main__':
     logger.info('start manager')
+    r = 0
+
     if args.cmd == 'update':
 
-        r = add_groups()
-        r &= update_posts()
+        r = update_posts()
 
-        if r:
-            logger.info('Update done')
-        else:
-            logger.error('Update is fail.')
+    elif args.cmd =='addgroup':
+        r = db.add_groups(config.GROUPS)
+
+
+    logger.info('Update done') if r else logger.error('Update is fail.')

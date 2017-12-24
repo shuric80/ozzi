@@ -70,7 +70,10 @@ def edit_message(call, post, keyboard):
         text = u'<b>{group}</b>  <code>{time}</code>\n{text}'.format(time=created_at, group=group, text=post.text[:1000])
 
     #text = post.text[:100] #TODO For debug
-    bot.edit_message_text(chat_id=id, message_id=mid, text=text, reply_markup=keyboard, parse_mode="HTML")
+    try:
+       bot.edit_message_text(chat_id=id, message_id=mid, text=text, reply_markup=keyboard, parse_mode="HTML")
+    except Exception as e:
+        logger.error('Post edit:{}'.format(e))
 
 
 @bot.message_handler(commands=['info'])
@@ -127,13 +130,11 @@ def callback_data(call):
     if call.message:
         dict_callback = json.loads(call.data)
         cookie_uuid = dict_callback.get('id')
-        cookie = UserSessionRedis()
         data_for_session = cookie.get(cookie_uuid)
+
         if data_for_session:
             action = data_for_session.get('action')
             callback_button = dict_callback.get('button')
-            logger.debug('COOKIE:{}'.format(data_for_session))
-            logger.debug('CALLBACK_DATA:{}'.format(callback_button))
 
             if action == ['POST EXPAND', 'INFO']:
                 cmd = dict_callback.get('cmd')
@@ -147,7 +148,7 @@ def callback_data(call):
 
             elif action == 'GROUP DETAIL':
                 ID_GROUPS_ALL = [i.id for i in db.get_all_group()]
-                page = data_for_session.get('page', 0)
+                page = int(data_for_session.get('page', 0))
                 group_id = None
 
                 if callback_button == 'PREVIOUS':
