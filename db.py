@@ -94,7 +94,7 @@ def add_groups(l_input):
     for group in l_input:
         if group['url'] not in l_name_groups:
             db_group = Group()
-            db_group.name = group['name']
+            db_group.name = group['name'] if group['name'] else None
             db_group.url = group['url']
             session.add(db_group)
 

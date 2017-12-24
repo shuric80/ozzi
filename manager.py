@@ -49,6 +49,8 @@ def add_groups():
     return r
 
 
+
+
 if __name__ == '__main__':
     logger.info('start manager')
     r = 0
@@ -56,9 +58,14 @@ if __name__ == '__main__':
     if args.cmd == 'update':
 
         r = update_posts()
+        r &= db.add_groups(config.GROUPS)
 
-    elif args.cmd =='addgroup':
-        r = db.add_groups(config.GROUPS)
+    # elif args.cmd == 'migrate':
+    #     alembic revision --autogenerate -m ''
+
+    # elif args.cmd == 'upgrade':
+    #     alembic upgrade head
 
 
-    logger.info('Update done') if r else logger.error('Update is fail.')
+
+    logger.info('Update is {}'.format(['fail','done'][r]))
