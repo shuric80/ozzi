@@ -69,11 +69,15 @@ def read_vk_content(url_address):
     for post in j_posts['response']['items']:
         if post['post_type'] == 'post':
             d_post = serialize_vk_post(post)
-            l_ret.append(d_post)
 
-        elif post['post_type'] == 'copy':
-            d_post =serialize_vk_post( post['copy_history'][0])
-            l_ret.append(d_post)
+            ## if repost
+            if 'copy_history' in post:
+                d_repost = serialize_vk_post( post['copy_history'][0])
+                ## text from repost add text from post
+                d_repost['text'] = ('\n...').join([d_post['text'], d_repost['text']])
+                l_ret.append(d_repost)
+            else:
+                l_ret.append(d_post)
 
     return ext, l_ret
 

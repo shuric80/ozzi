@@ -12,6 +12,7 @@ from log import logger
 from base import engine, config
 from config import GROUPS
 
+
 session_factory = sessionmaker(bind = engine)
 session = scoped_session(session_factory)
 

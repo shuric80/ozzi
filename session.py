@@ -27,8 +27,10 @@ class UserSessionRedis:
     def add(self, id, d_input):
         logger.debug('ADD:{} {}'.format(id, d_input))
         self.connection.hmset(id, d_input)
+        self.connection.expire(id, config.SESSION_TIME)
 
     def get(self, id):
         logger.debug('GET:{}'.format(id))
         d = self.connection.hgetall(id)
+
         return dict((k.decode('utf-8'), v.decode('utf-8')) for k,v in d.items())
