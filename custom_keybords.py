@@ -32,7 +32,7 @@ def keyboard_last_posts(post, id):
 def keyboard_next_page(group, sid):
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keys = list()
-    for i in ['next', 'previous']:
+    for i in ['\U000023EA', '\U000023E9']:
         btn = types.InlineKeyboardButton(text = str(i), callback_data = json.dumps(dict(id=sid, button=i.upper())))
         keys.append(btn)
 

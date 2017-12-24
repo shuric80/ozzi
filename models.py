@@ -42,7 +42,7 @@ class Group(Base):
     url = Column( Unicode(50), nullable=True, unique=True)
 
     posts = relationship('Post', backref= backref('group', lazy = 'joined'))
-    users = relationship('User', secondary=association_table_tag_user, back_populates='groups')
+    users = relationship('User', secondary=association_table_group_user, back_populates='groups')
 
     def __repr__(self):
         return '<Group:{}>'.format(self.name)
@@ -85,6 +85,7 @@ class User(Base):
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
+    #message_chat_id = Column(Integer, primary_key = True)
 
     first_name = Column('first name', Unicode(128))
     last_name = Column('last name',  Unicode(128))
@@ -92,5 +93,5 @@ class User(Base):
 
     real_name = Column('Name', Unicode(128))
 
-    dates = Column(Integer, ForeignKey('datetime.id'))
+    #dates = Column(Integer, ForeignKey('datetime.id'))
     groups = relationship('Group', secondary = association_table_group_user, back_populates='users')

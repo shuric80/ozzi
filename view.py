@@ -17,10 +17,20 @@ cookie = UserSessionRedis()
 def message_start(message):
     """Main menu. Cmd help or start.
        """
-    logger.debug('info')
     user_markup = None
     content = config.HELP
     bot.send_message(message.chat.id, content, reply_markup = user_markup)
+
+
+
+@bot.message_handler(commands=['settings'])
+def message_settings(message):
+     group_list = db.get_all_group()
+     sid = cookie.id
+     keyboard = keyboard_list_groups(group_list, sid)
+     cookie.add(sid, dict(action='SETTINGS'))
+     bot.send_message(message.chat.id, '<b>Group</b>', reply_markup=keyboard, parse_mode='HTML')
+     logger.debug('settings')
 
 
 @bot.message_handler(commands=['list'])
@@ -28,9 +38,9 @@ def view_list_groups(message):
     """ View list groups. Create cookie
       """
     group_list =  db.get_all_group()
-    id = cookie.id
-    keyboard = keyboard_list_groups(group_list, id)
-    cookie.add(id, dict(action='GROUP DETAIL'))
+    sid = cookie.id
+    keyboard = keyboard_list_groups(group_list, sid)
+    cookie.add(sid, dict(action='GROUP DETAIL'))
     bot.send_message(message.chat.id, '<b>Groups</b>', reply_markup=keyboard, parse_mode='HTML')
 
 
@@ -157,11 +167,13 @@ def callback_data(call):
                 page = int(data_for_session.get('page', 0))
                 group_id = None
 
-                if callback_button == 'PREVIOUS':
+                ## previous page
+                if callback_button == '\U000023E9':
                     page += 1 if page is not 30 else 0
                     group_id = data_for_session.get('group')
 
-                elif callback_button == 'NEXT':
+                ## next page
+                elif callback_button == '\U000023EA':
                     page -= 1 if page is not 0 else 0
                     group_id = data_for_session.get('group')
 
@@ -175,6 +187,9 @@ def callback_data(call):
                 new_cookie = dict(group = group_id, page=page, action='GROUP DETAIL')
                 cookie.add(cookie_uuid, new_cookie)
                 choose_next_post(call, cookie_uuid)
+
+            elif action == 'SETTINGS':
+                pass
 
         else:
             logger.debug(call.data)
