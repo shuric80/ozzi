@@ -6,11 +6,17 @@ from telebot import types
 from log import logger
 
 
-def keyboard_list_groups(q, id):
+def keyboard_list_groups(q, id, l_like = None):
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     l_btns = list()
     for btn in q:
-        callable_button = types.InlineKeyboardButton(text=btn.name, callback_data= json.dumps(dict(id = id, button=btn.id)))
+
+        try:
+            btn_text = (' ').join(['\U00002764', btn.name]) if btn.name in l_like else btn.name
+        except:
+            btn_text = btn.name
+
+        callable_button = types.InlineKeyboardButton(text = btn_text, callback_data= json.dumps(dict(id = id, button=btn.id)))
         l_btns.append(callable_button)
 
     keyboard.add(*l_btns)

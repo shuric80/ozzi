@@ -25,12 +25,14 @@ def message_start(message):
 
 @bot.message_handler(commands=['settings'])
 def message_settings(message):
+
      group_list = db.get_all_group()
      sid = cookie.id
-     keyboard = keyboard_list_groups(group_list, sid)
+     keyboard = keyboard_list_groups(group_list, sid, l_like=['2mambo'])
      cookie.add(sid, dict(action='SETTINGS'))
-     bot.send_message(message.chat.id, '<b>Group</b>', reply_markup=keyboard, parse_mode='HTML')
-     logger.debug('settings')
+     bot.send_message(message.chat.id, '<b>Like group</b>', reply_markup=keyboard, parse_mode='HTML')
+     #bot.edit_message_text(message.chat.id, '<b>Like group</b>', reply_markup=keyboard, parse_mode='HTML')
+
 
 
 @bot.message_handler(commands=['list'])
@@ -118,6 +120,11 @@ def send_info(call, post_id):
         logger.error('Info at group')
 
 
+def settings_list_group(call):
+    pass
+
+
+
 def choose_next_post(call, sid):
     ## user click next or prev post.
 
@@ -152,7 +159,6 @@ def callback_data(call):
             logger.debug('ACTION:{} '.format(action))
 
             if action == 'POST EXPAND':
-                logger.debug('POST EXPAND')
                 cmd = dict_callback.get('cmd')
                 post_id = callback_button
 
@@ -189,7 +195,9 @@ def callback_data(call):
                 choose_next_post(call, cookie_uuid)
 
             elif action == 'SETTINGS':
-                pass
+                logger.debug('LiKe:{}'.format(callback_button))
+
+
 
         else:
             logger.debug(call.data)
