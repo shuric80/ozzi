@@ -3,3 +3,5 @@
 static/
 alembic/versions/
 *.db
+env/
+activate
