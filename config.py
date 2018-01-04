@@ -1,13 +1,9 @@
 # -*- coding:utf-8 -*-
-<<<<<<< HEAD:app/config.py
+
 PORT = 5000
 HOST = "127.0.0.1"
 CNT = 20
-=======
-
-CNT = 10
 SESSION_TIME = 3600
->>>>>>> af55829:config.py
 SECRET_COD = 'kuku'
 #TOKEN = '246271863:AAEUJQJ7aHByov0wnHBjSUGseL1ixU1mSgk'
 TOKEN = '163963654:AAGaVG5vMSfZ5nuGV9q5FyGcojW-ShoJR0k'

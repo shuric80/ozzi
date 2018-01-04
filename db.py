@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 
 from sqlalchemy import exc
 from sqlalchemy import create_engine
-from models import Post, Group
+from models import Post, Group, User
 
 from log import logger
 #from configobj import ConfigObj
@@ -14,6 +14,42 @@ from config import GROUPS
 
 session_factory = sessionmaker(bind = engine)
 session = scoped_session(session_factory)
+
+
+def get_user(id):
+    return session.query(User).get(id)
+
+
+def get_group_user(id):
+    return session.query(Group).join(Group.users).filter(User.id == id)
+
+
+def update_users_group(user, l_groups):
+    ## update user's prefer groups
+
+    user_db = session.query(User).get(user.id)
+    if not user_db:
+        user_db = User()
+        user_db.id = user.id
+
+    user_db.first_name = user.first_name
+    user_db.last_name = user.last_name
+    user_db.username = user.username
+    try:
+        user_db.groups = [get_group(id) for id in l_groups]
+    except:
+        logger.error('l_groups:{}'.format(l_groups))
+        return
+
+    session.add(user_db)
+
+    try:
+        session.commit()
+    except exc.SQLAlchemyError as e:
+          logger.error(e)
+          session.rollback()
+    finally:
+        pass
 
 
 def get_post_extand(id):
@@ -27,10 +63,13 @@ def get_all_group():
     return q
 
 
-def get_last_posts(cnt =5):
+def get_last_posts(user_id, cnt = 5):
     ## return last post for time
     cnt = cnt if 0 < cnt < 10 else 5
-    q = session.query(Post).order_by(Post.date.desc()).limit(cnt)
+    user = get_user(user_id)
+    user_groups = [ g.id for g in user.groups]
+    q = session.query(Post).join(Group).filter(Group.id.in_(user_groups)) \
+                                               .order_by(Post.date.desc()).limit(cnt)
     return q
 
 

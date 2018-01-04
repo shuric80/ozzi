@@ -7,7 +7,7 @@ import db
 from session import UserSessionRedis
 from server import bot
 from log import logger
-from custom_keybords import keyboard_last_posts, keyboard_list_groups, keyboard_next_page
+import  custom_keybords as kb
 import config
 
 cookie = UserSessionRedis()
@@ -25,14 +25,14 @@ def message_start(message):
 
 @bot.message_handler(commands=['settings'])
 def message_settings(message):
+     logger.debug('ID:{}'.format(message))
 
-     group_list = db.get_all_group()
-     sid = cookie.id
-     keyboard = keyboard_list_groups(group_list, sid, l_like=['2mambo'])
-     cookie.add(sid, dict(action='SETTINGS'))
-     bot.send_message(message.chat.id, '<b>Like group</b>', reply_markup=keyboard, parse_mode='HTML')
-     #bot.edit_message_text(message.chat.id, '<b>Like group</b>', reply_markup=keyboard, parse_mode='HTML')
-
+     cid = cookie.id
+     l_group_user = db.get_group_user(message.chat.id)
+     s_group_user = ','.join([ str(s.id) for s in l_group_user])
+     cookie.add(cid, dict(action='SETTINGS', l_like = s_group_user ))
+     keyboard = kb.keyboard_menu_settings(dict(id = cid))
+     bot.send_message(message.chat.id, '<b>Settings:</b>', reply_markup=keyboard, parse_mode='HTML')
 
 
 @bot.message_handler(commands=['list'])
@@ -41,7 +41,7 @@ def view_list_groups(message):
       """
     group_list =  db.get_all_group()
     sid = cookie.id
-    keyboard = keyboard_list_groups(group_list, sid)
+    keyboard = kb.keyboard_list_groups(group_list, sid)
     cookie.add(sid, dict(action='GROUP DETAIL'))
     bot.send_message(message.chat.id, '<b>Groups</b>', reply_markup=keyboard, parse_mode='HTML')
 
@@ -55,11 +55,13 @@ def send_last_posts(message):
     cnt = int(l_str_cnt[0]) if l_str_cnt else 3
 
     sid = cookie.id
+    user_id = message.from_user.id
     cookie.add(sid, dict(action='POST EXPAND'))
 
-    last_posts = db.get_last_posts(cnt)
+    last_posts = db.get_last_posts(user_id, cnt)
+
     for post in last_posts:
-        keyboard = keyboard_last_posts(post, sid)
+        keyboard = kb.keyboard_last_posts(post, sid)
         group = post.group.name
         created_at = time.strftime("%H:%M %d-%b-%Y",time.localtime(post.date))
         text = u'<code>{time}</code>\n<b>{group}</b>\n{text}...'.format(time=created_at, group=group, text=post.text[:200])
@@ -120,11 +122,6 @@ def send_info(call, post_id):
         logger.error('Info at group')
 
 
-def settings_list_group(call):
-    pass
-
-
-
 def choose_next_post(call, sid):
     ## user click next or prev post.
 
@@ -133,14 +130,55 @@ def choose_next_post(call, sid):
     page  = int(d_session.get('page'))
     post = db.get_post_from_group(group_id, page)
     group = db.get_group(group_id)
-    keyboard = keyboard_next_page(group, sid)
-
+    keyboard = kb.keyboard_next_page(group, sid)
 
     if post:
         edit_message(call, post, keyboard)
 
     else:
          logger.debug('Post no found:')
+
+
+def eq_action(call, action):
+    d_data = json.loads(call.data)
+    cookie_id = d_data.get('id')
+    data = cookie.get(cookie_id)
+    return data.get('action') == action
+
+
+@bot.callback_query_handler(func = lambda call: eq_action(call, 'SETTINGS'))
+def edit_settings(call):
+     ## set prefer group for user
+
+     d_request_data = json.loads(call.data)
+     cookie_id = d_request_data.get('id')
+     button_like = d_request_data.get('button')
+
+     l_group_all = db.get_all_group()
+     cookie_data = cookie.get(cookie_id)
+     l_like_groups = [int(i) for i in cookie_data['l_like'].split(',') if i.isdigit()]
+     ## like or unlike group
+     if button_like is None:
+         pass
+     elif button_like not in l_like_groups:
+         l_like_groups.append(button_like)
+     else:
+         l_like_groups.remove(button_like)
+
+     d_output= dict( id = cookie_id, groups = l_group_all, l_like = l_like_groups)
+     keyboard = kb.keyboard_settings(d_output)
+
+     ## add like group in cookie session
+     s_like_groups = ','.join( [ str(s) for s in l_like_groups])
+     cookie.add(cookie_id, { 'action': 'SETTINGS', 'l_like': s_like_groups})
+
+     cid = call.message.chat.id
+     mid = call.message.message_id
+
+     bot.edit_message_text(chat_id = cid, message_id = mid, text = '<b>Choose like group</b>', reply_markup=keyboard, parse_mode='HTML')
+
+     db.update_users_group(call.from_user, l_like_groups)
+     #logger.debug('CALL:{}'.format(call.from_user))
 
 
 @bot.callback_query_handler(func=lambda call:True)
@@ -193,9 +231,6 @@ def callback_data(call):
                 new_cookie = dict(group = group_id, page=page, action='GROUP DETAIL')
                 cookie.add(cookie_uuid, new_cookie)
                 choose_next_post(call, cookie_uuid)
-
-            elif action == 'SETTINGS':
-                logger.debug('LiKe:{}'.format(callback_button))
 
 
 

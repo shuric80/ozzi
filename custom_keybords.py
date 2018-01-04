@@ -5,18 +5,35 @@ import json
 from telebot import types
 from log import logger
 
+def keyboard_menu_settings(d_input):
+    keyboard = types.InlineKeyboardMarkup(row_width =1)
+    button = types.InlineKeyboardButton(text = 'Choose groups', callback_data = json.dumps(dict(id = d_input['id'])))
+    keyboard.add(button)
+    return keyboard
 
-def keyboard_list_groups(q, id, l_like = None):
+
+def keyboard_settings(d_input):
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    l_btn = list()
+
+    for btn in d_input['groups']:
+        emoji = '\U00002705' if btn.id in d_input['l_like'] else '\U0000274C'
+        btn_title =' '.join([ emoji, btn.name])
+        callable_button = types.InlineKeyboardButton(
+            text = btn_title, callback_data = json.dumps(dict(id = d_input['id'], button = btn.id))
+        )
+        l_btn.append(callable_button)
+
+    keyboard.add(*l_btn)
+    return keyboard
+
+
+def keyboard_list_groups(q, id):
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     l_btns = list()
     for btn in q:
-
-        try:
-            btn_text = (' ').join(['\U00002764', btn.name]) if btn.name in l_like else btn.name
-        except:
-            btn_text = btn.name
-
-        callable_button = types.InlineKeyboardButton(text = btn_text, callback_data= json.dumps(dict(id = id, button=btn.id)))
+        callable_button = types.InlineKeyboardButton(
+            text = btn.name, callback_data= json.dumps(dict(id = id, button=btn.id)))
         l_btns.append(callable_button)
 
     keyboard.add(*l_btns)
