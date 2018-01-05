@@ -40,15 +40,22 @@ def keyboard_list_groups(q, id):
     return keyboard
 
 
+def keyboard_view_info(url):
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    url_button = types.InlineKeyboardButton(text='Group', url='http://vk.com/{url}'.format(url=url))
+    keyboard.add(url_button)
+    return keyboard
+
+
 def keyboard_last_posts(post, id):
     created_at = time.strftime("%H:%M %d-%b-%Y",time.localtime(post.date))
-    group = post.group.name
-    keyboard = types.InlineKeyboardMarkup(row_width=3)
-    callable_button = types.InlineKeyboardButton(text='Expand', callback_data=json.dumps(dict(id =id, button=post.id , cmd=0)))
-    #description_button = types.InlineKeyboardButton(text='Info', callback_data=json.dumps(dict(id = cookie_uuid, button = post.id, cmd=1)))
+    group_id = post.group.id
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    callable_button = types.InlineKeyboardButton(text='\U00002934', callback_data=json.dumps(dict(id =id, button=post.id)))
+    info_button = types.InlineKeyboardButton(text='\U00002139', callback_data=json.dumps(dict(group =group_id, button = 'INFO')))
     url_button = types.InlineKeyboardButton(text='Group', url='http://vk.com/{url}'.format( url=post.group.url))
     #text = u'<code>{time}</code>\n<b>{group}</b>\n{text}...'.format(time=created_at, group=group, text=post.text[:200])
-    keyboard.add(callable_button)
+    keyboard.add(info_button, callable_button )
     return keyboard
 
 
@@ -60,7 +67,8 @@ def keyboard_next_page(group, sid):
         keys.append(btn)
 
     #group = db.get_group(group_id)
-    keys.append(types.InlineKeyboardButton(text='Group', url='http://vk.com/%s'%group.url))
+    #keys.append(types.InlineKeyboardButton(text='Group', url='http://vk.com/%s'%group.url))
+    keys.append(types.InlineKeyboardButton(text='\U00002139', callback_data=json.dumps(dict(group =group.id, button = 'INFO'))))
     keyboard.add(*keys)
 
     return keyboard

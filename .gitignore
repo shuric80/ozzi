@@ -5,3 +5,4 @@ alembic/versions/
 *.db
 env/
 activate
+log/

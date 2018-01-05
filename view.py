@@ -26,7 +26,6 @@ def message_start(message):
 @bot.message_handler(commands=['settings'])
 def message_settings(message):
      logger.debug('ID:{}'.format(message))
-
      cid = cookie.id
      l_group_user = db.get_group_user(message.chat.id)
      s_group_user = ','.join([ str(s.id) for s in l_group_user])
@@ -50,7 +49,7 @@ def view_list_groups(message):
 @bot.message_handler(commands=['last'])
 def send_last_posts(message):
     # View for convert cnt from  string format to int format.
-    str_range = map(str, range(1,6)) # '1','2'...'5'
+    str_range = map(str, range(1,9)) # '1','2'...'5'
     l_str_cnt = list(filter( lambda x: x in message.text, str_range))
     cnt = int(l_str_cnt[0]) if l_str_cnt else 3
 
@@ -91,15 +90,15 @@ def edit_message(call, post, keyboard):
         logger.error('Post edit:{}'.format(e))
 
 
-@bot.message_handler(commands=['info'])
-def view_info(message):
-    name = message.text.split(' ')
-    if len(name) == 2:
-        group = db.get_describe_group(name[1])
-        if group:
-           text = "<strong>{name}</strong>\n <strong>tel: {phone}</strong>\n {description}\n {photo}".format(name=group.name.encode('utf-8'),
-           description=group.description.encode('utf-8'), photo=group.photo, phone=group.phone)
-           bot.send_message(message.chat.id, text , parse_mode= 'HTML')
+# @bot.message_handler(commands=['info'])
+# def view_info(message):
+#     name = message.text.split(' ')
+#     if len(name) == 2:
+#         group = db.get_describe_group(name[1])
+#         if group:
+#            text = "<strong>{name}</strong>\n <strong>tel: {phone}</strong>\n {description}\n {photo}".format(name=group.name.encode('utf-8'),
+#            description=group.description.encode('utf-8'), photo=group.photo, phone=group.phone)
+#            bot.send_message(message.chat.id, text , parse_mode= 'HTML')
 
 
 def send_expanded_post(call, post_id):
@@ -108,18 +107,18 @@ def send_expanded_post(call, post_id):
     edit_message(call, post, keyboard)
 
 
-def send_info(call, post_id):
-    post  = db.get_post_extand(post_id)
-    group = db.get_describe_group(post.group.name)
+# def send_info(call, post_id):
+#     post  = db.get_post_extand(post_id)
+#     group = db.get_describe_group(post.group.name)
 
-    logger.debug('{} {} {}'.format(post_id, post,  group))
-    if group:
-        text = "<strong>{name}</strong>\n <strong>tel: {phone}</strong>\n {info}\n {photo}".format(name=group.name.encode('utf-8'),
-                                      info=group.description.encode('utf-8'), photo=group.photo, phone=group.phone)
-        bot.edit_message_text(chat_id = call.message.chat.id, message_id=call.message.message_id, text=text, parse_mode='HTML')
+#     logger.debug('{} {} {}'.format(post_id, post,  group))
+#     if group:
+#         text = "<strong>{name}</strong>\n <strong>tel: {phone}</strong>\n {info}\n {photo}".format(name=group.name.encode('utf-8'),
+#                                       info=group.description.encode('utf-8'), photo=group.photo, phone=group.phone)
+#         bot.edit_message_text(chat_id = call.message.chat.id, message_id=call.message.message_id, text=text, parse_mode='HTML')
 
-    else:
-        logger.error('Info at group')
+#     else:
+#        logger.error('Info at group')
 
 
 def choose_next_post(call, sid):
@@ -144,6 +143,30 @@ def eq_action(call, action):
     cookie_id = d_data.get('id')
     data = cookie.get(cookie_id)
     return data.get('action') == action
+
+
+@bot.callback_query_handler(func = lambda call: json.loads(call.data).get('button') == 'INFO')
+def view_info(call):
+    ## View description about group
+    cid = call.message.chat.id
+    mid = call.message.message_id
+
+    group_id = int(json.loads(call.data).get('group'))
+    group = db.get_group(group_id)
+    keyboard = kb.keyboard_view_info(group.url)
+
+    if group:
+        text = "<strong>{name}</strong>\n<strong>☎:{phone}</strong>\n{info}\n \
+                 {photo}".format(
+                  name = group.name,
+                  info = group.description[:4000],
+                  photo = group.photo,
+                  phone=group.phone
+                 )
+        bot.edit_message_text(chat_id = cid, message_id=mid, text=text, parse_mode='HTML', reply_markup = keyboard)
+
+    else:
+        logger.error('Group None :{}'.format(group_name))
 
 
 @bot.callback_query_handler(func = lambda call: eq_action(call, 'SETTINGS'))
@@ -200,11 +223,7 @@ def callback_data(call):
                 cmd = dict_callback.get('cmd')
                 post_id = callback_button
 
-                if cmd == 0:
-                    send_expanded_post(call, post_id)
-
-                elif cmd ==1:
-                    send_info(call, post_id)
+                send_expanded_post(call, post_id)
 
             elif action == 'GROUP DETAIL':
                 ID_GROUPS_ALL = [i.id for i in db.get_all_group()]

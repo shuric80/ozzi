@@ -26,7 +26,6 @@ def get_group_user(id):
 
 def update_users_group(user, l_groups):
     ## update user's prefer groups
-
     user_db = session.query(User).get(user.id)
     if not user_db:
         user_db = User()
@@ -35,11 +34,8 @@ def update_users_group(user, l_groups):
     user_db.first_name = user.first_name
     user_db.last_name = user.last_name
     user_db.username = user.username
-    try:
-        user_db.groups = [get_group(id) for id in l_groups]
-    except:
-        logger.error('l_groups:{}'.format(l_groups))
-        return
+
+    user_db.groups = [get_group(id) for id in l_groups]
 
     session.add(user_db)
 
@@ -56,6 +52,7 @@ def get_post_extand(id):
     ## return post with full text
     q = session.query(Post).get(id)
     return q
+
 
 def get_all_group():
     ## list groups
@@ -78,11 +75,6 @@ def get_group(id):
     q = session.query(Group).get(id)
     return q
 
-
-def get_describe_group(name):
-    ## content about group
-    q = session.query(Group).filter_by(title =name).first()
-    return q
 
 def add_group(l_input):
     groups = get_all_group()
@@ -123,9 +115,7 @@ def update_db(group, d_input):
     return status
 
 
-
 def get_post_from_group(group_id, num = 0):
-    logger.debug('GROUP:{} NUM:{}'.format(group_id, num))
     ## for group.id return post with offset num
     post = session.query(Post).join(Post.group).filter(Group.id== group_id)[num]
     return post
