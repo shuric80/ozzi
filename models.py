@@ -13,6 +13,8 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy import UniqueConstraint
 from base import Base
 
+class UserEnum(enum.Enum):
+    n = 'N'
 
 
 association_table_post_tag = Table('association_post_tag', Base.metadata,
@@ -34,7 +36,7 @@ class Group(Base):
     __tablename__ = 'group'
 
     id = Column( Integer, primary_key=True)
-    name = Column('name', Unicode(20))
+    name = Column('name', Unicode(80))
     description = Column('description', Unicode(512))
     photo = Column('photo_logo', Unicode(128))
     email = Column('email', Unicode(62))
@@ -92,6 +94,7 @@ class User(Base):
     username = Column('username', Unicode(128))
 
     real_name = Column('Name', Unicode(128))
+    is_type = Column(Enum(UserEnum))
 
     #dates = Column(Integer, ForeignKey('datetime.id'))
     groups = relationship('Group', secondary = association_table_group_user, back_populates='users')
