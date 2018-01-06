@@ -5,16 +5,12 @@ from datetime import datetime
 import enum
 
 from sqlalchemy import Table, Column, \
-    Integer,Unicode, \
-    DateTime, Enum
+    Integer,Unicode, DateTime, Enum
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import UniqueConstraint
 from base import Base
-
-class UserEnum(enum.Enum):
-    n = 'N'
 
 
 association_table_post_tag = Table('association_post_tag', Base.metadata,
@@ -37,11 +33,11 @@ class Group(Base):
 
     id = Column( Integer, primary_key=True)
     name = Column('name', Unicode(80))
-    description = Column('description', Unicode(512))
-    photo = Column('photo_logo', Unicode(128))
+    description = Column('description', Unicode(4000))
+    photo = Column('photo_logo', Unicode(80))
     email = Column('email', Unicode(62))
-    phone = Column('phone', Unicode(12))
-    url = Column( Unicode(50), nullable=True, unique=True)
+    phone = Column('phone', Unicode(24))
+    url = Column( Unicode(120), nullable=True, unique=True)
 
     posts = relationship('Post', backref= backref('group', lazy = 'joined'))
     users = relationship('User', secondary=association_table_group_user, back_populates='groups')
@@ -71,7 +67,7 @@ class Post(Base):
     tstamp = Column( DateTime, default = datetime.utcnow)
     date = Column('created', Integer, nullable = False)
     text = Column('content', Unicode(4096))
-    photos = Column('photo', Unicode(512), nullable = True)
+    photos = Column('photo', Unicode(124), nullable = True)
 
     group_id =  Column(Integer, ForeignKey('group.id'))
     tags = relationship('Tag', secondary = association_table_post_tag, back_populates='posts')
@@ -94,7 +90,7 @@ class User(Base):
     username = Column('username', Unicode(128))
 
     real_name = Column('Name', Unicode(128))
-    is_type = Column(Enum(UserEnum))
+    #is_type = Column(Enum(UserEnum))
 
     #dates = Column(Integer, ForeignKey('datetime.id'))
     groups = relationship('Group', secondary = association_table_group_user, back_populates='users')

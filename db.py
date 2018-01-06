@@ -64,9 +64,14 @@ def get_last_posts(user_id, cnt = 5):
     ## return last post for time
     cnt = cnt if 0 < cnt < 10 else 5
     user = get_user(user_id)
-    user_groups = [ g.id for g in user.groups]
-    q = session.query(Post).join(Group).filter(Group.id.in_(user_groups)) \
+    q = None
+    if user:
+        user_groups = [ g.id for g in user.groups]
+        q = session.query(Post).join(Group).filter(Group.id.in_(user_groups)) \
                                                .order_by(Post.date.desc()).limit(cnt)
+    else:
+        q = session.query(Post).order_by(Post.date.desc()).limit(cnt)
+
     return q
 
 
@@ -74,14 +79,6 @@ def get_group(id):
     # group
     q = session.query(Group).get(id)
     return q
-
-
-def add_group(l_input):
-    groups = get_all_group()
-    for url in l_input:
-        if url not in list(map(lambda x:x.url, groups)):
-            group = Group()
-            group.url = url
 
 
 def update_db(group, d_input):
@@ -129,7 +126,7 @@ def add_groups(l_input):
     for group in l_input:
         if group['url'] not in l_name_groups:
             db_group = Group()
-            db_group.name = group['name'] if group['name'] else None
+            db_group.name = group['name'] if group['name']  else None
             db_group.url = group['url']
             session.add(db_group)
 
@@ -142,20 +139,20 @@ def add_groups(l_input):
        logger.error('Database rollback.{}'.format(e))
        status = False
     finally:
-       session.close()
+       #session.close()
        logger.info('Database close')
 
     return status
 
 
 def update_description_group(group, d_input):
-
+    ## update description and contact group
     group.email = d_input.get('email')
-    group.name = d_input.get('name')
-    group.description = d_input.get('description')
+    group.name = d_input.get('name')[:40]
+    group.description = d_input.get('description')[:1000]
     #group.desc = d_input.get('desc')
     group.phone = d_input.get('phone')
-    group.photo = d_input.get('photo')
+    group.photo = d_input.get('photo')[:200]
 
     session.add(group)
 

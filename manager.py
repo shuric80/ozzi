@@ -4,11 +4,17 @@
 import os
 import sys
 import argparse
+import shortuuid
+from celery import Celery
+from celery.schedules import crontab
+from datetime import timedelta
 
 import config
 import db
 from parser import read_vk_content
 from log import logger
+from server import bot, celery
+
 
 """
    Use alembic for generate database.
@@ -27,12 +33,20 @@ from log import logger
     > alembic revision --autogenerate -m  'initial'
     > alembic upgrade head
         """
+celery = Celery('ozzi', broker = config.CELERY_BROKER_URL)
 
-parser = argparse.ArgumentParser(description='Initialize database')
-parser.add_argument('cmd', choices=['update','addgroup'])
-args = parser.parse_args()
+celery.conf.beat_schedule = {
+	# executes every night at 4:15
+	'every-day': {
+		'task': 'user.checkaccounts',
+		'schedule': crontab(minute='*/15', hour='8-21')
+	}
+}
 
+
+@celery.task(name = 'user.checkaccounts')
 def update_posts():
+    logger.info('UPDATE POSTS')
     groups = db.get_all_group()
     r = True
     for g in groups:
@@ -43,29 +57,41 @@ def update_posts():
     return r
 
 
-
 def add_groups():
+    ##
+    logger.info('ADD/RM GROUPS')
     r = db.add_groups(config.GROUPS)
     return r
 
-
-
-
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Initialize database')
+    parser.add_argument('cmd', choices=['update','addgroup','migrate','upgrade','runbot'])
+    args = parser.parse_args()
+
     logger.info('start manager')
     r = 0
 
     if args.cmd == 'update':
-
+        ## update posts in database
         r = update_posts()
-        r &= db.add_groups(config.GROUPS)
 
-    # elif args.cmd == 'migrate':
-    #     alembic revision --autogenerate -m ''
+    elif args.cmd == 'addgroup':
+        ## add group to database
+        r = add_groups()
 
-    # elif args.cmd == 'upgrade':
-    #     alembic upgrade head
+    elif args.cmd == 'migrate':
+         ## migrate db
+         os.system('alembic revision --autogenerate -m "{}"'.format(shortuuid.uuid()))
 
+    elif args.cmd == 'upgrade':
+         ## update tables database
+         os.system('alembic upgrade head')
 
+    elif args.cmd == 'runbot':
+        ## run bot
+        bot.polling()
+
+    else:
+        pass
 
     logger.info('Update is {}'.format(['fail','done'][r]))

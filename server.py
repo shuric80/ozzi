@@ -1,17 +1,32 @@
 #-*- coding:utf-8 -*-
 import logging
 from flask import Flask
+from celery import Celery
+from datetime import timedelta
+
 import telebot
 import config
 from log import logger
 
+
 app = Flask(__name__)
 app.debug = config.DEBUG
+
+celery = Celery('ozzi', broker = config.CELERY_BROKER_URL)
 
 bot = telebot.TeleBot(config.TOKEN)
 
 
 from view import *
+
+# @celery.on_after_configure.connect
+# def task(sender, **kwargs):
+#     sender.add_periodic_task(1, test.s('PING'), name= 'add every 10')
+
+#@celery.task
+#def test():
+#     logger.debug('PING')
+
 
 @app.route('/bot', methods=['GET', 'HEAD'])
 def webhook():
@@ -32,16 +47,3 @@ def send_message():
 
     else:
         logger.error('FAIL HEADERS:{}'.format(request.headers))
-
-
-if __name__ == '__main__':
-   if  getattr(config,'TESTING'):
-       print('Run testing version.')
-       bot.polling()
-
-   else:
-       print('Develop version.')
-       app.run(
-           host = '127.0.0.1',
-           port = 5000,
-       )
