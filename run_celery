@@ -1,0 +1,1 @@
+celery -A manager.celery worker -B --loglevel=DEBUG

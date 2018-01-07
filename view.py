@@ -22,7 +22,6 @@ def message_start(message):
     bot.send_message(message.chat.id, content, reply_markup = user_markup)
 
 
-
 @bot.message_handler(commands=['settings'])
 def message_settings(message):
      logger.debug('ID:{}'.format(message))
@@ -51,7 +50,7 @@ def send_last_posts(message):
     # View for convert cnt from  string format to int format.
     str_range = map(str, range(1,9)) # '1','2'...'5'
     l_str_cnt = list(filter( lambda x: x in message.text, str_range))
-    cnt = int(l_str_cnt[0]) if l_str_cnt else 3
+    cnt = int(l_str_cnt[0]) if l_str_cnt else 5
 
     sid = cookie.id
     user_id = message.from_user.id
