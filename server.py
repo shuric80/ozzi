@@ -39,3 +39,8 @@ def send_message():
 
     else:
         logger.error('FAIL HEADERS:{}'.format(request.headers))
+
+
+@app.route('/ping'):
+def index():
+    return '<h2>pong</h2>'
