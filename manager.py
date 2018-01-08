@@ -65,7 +65,7 @@ def add_groups():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Initialize database')
-    parser.add_argument('cmd', choices=['update','addgroup','migrate','upgrade','runbot'])
+    parser.add_argument('cmd', choices=['update','addgroup','migrate','upgrade','runbot','runserver'])
     args = parser.parse_args()
 
     logger.info('start manager')
@@ -90,6 +90,13 @@ if __name__ == '__main__':
     elif args.cmd == 'runbot':
         ## run bot
         bot.polling()
+
+    elif args.cmd == 'runserver':
+        app.run(
+            host = config.HOST,
+            port = config.PORT,
+           debug = config.DEBUG
+        )
 
     else:
         pass
