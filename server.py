@@ -19,23 +19,15 @@ bot = telebot.TeleBot(config.TOKEN)
 
 from view import *
 
-# @celery.on_after_configure.connect
-# def task(sender, **kwargs):
-#     sender.add_periodic_task(1, test.s('PING'), name= 'add every 10')
 
-#@celery.task
-#def test():
-#     logger.debug('PING')
-
-
-@app.route('/bot', methods=['GET', 'HEAD'])
+@app.route('/ozzi', methods=['GET', 'HEAD'])
 def webhook():
     bot.remove_webhook()
-    bot.set_webhook("https://62.109.13.25:8443/bot",  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
+    bot.set_webhook("https://62.109.13.25:8443/ozzi",  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
     return '!'
 
 
-@app.route('/bot', methods=['POST'])
+@app.route('/ozzi', methods=['POST'])
 def send_message():
     logger.info('WEBHOOK: HEADERS:{}  BODY:{}'.format(request.headers, request.data))
 
