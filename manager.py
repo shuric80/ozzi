@@ -13,7 +13,7 @@ import config
 import db
 from parser import read_vk_content
 from log import logger
-from server import bot, celery
+from server import bot, celery, app
 
 
 """
