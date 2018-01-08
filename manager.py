@@ -39,7 +39,7 @@ celery.conf.beat_schedule = {
 	# executes every night at 4:15
 	'every-day': {
 		'task': 'user.checkaccounts',
-		'schedule': crontab(minute='*/30', hourcd='7-22')
+		'schedule': crontab(minute='*/30', hours='7-22')
 	}
 }
 
