@@ -23,7 +23,8 @@ from view import *
 @app.route('/ozzi', methods=['GET', 'HEAD'])
 def webhook():
     bot.remove_webhook()
-    bot.set_webhook("https://62.109.13.25:8443/ozzi",  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
+    #TODO брать с конфига
+    bot.set_webhook("https://51.89.138.160:8443/ozzi",  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
     return '!'
 
 

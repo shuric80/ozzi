@@ -1,17 +1,18 @@
 # -*- coding:utf-8 -*-
+import os
 CNT = 10
 SESSION_TIME = 3600
 SECRET_COD = 'kuku'
 WEBHOOK_SSL_CERT = 'webhook_cert.pem'
 WEBHOOK_SSL_PRIV = 'webhook_pkey.pem'
-HOST = '62.109.13.25'
+HOST = os.environ('HOST')
 PORT = 5000
-WEBHOOK_HOST = '62.109.13.25'
+WEBHOOK_HOST = os.environ('HOST')
 WEBHOOK_PORT = 443
 WEBHOOK_URL_BASE = 'https://{!s}:{}'.format(WEBHOOK_HOST, WEBHOOK_PORT)
 #TOKEN = '246271863:AAEUJQJ7aHByov0wnHBjSUGseL1ixU1mSgk'
-TOKEN = '163963654:AAGaVG5vMSfZ5nuGV9q5FyGcojW-ShoJR0k'
-VK_TOKEN = '54cbe13354cbe13354cbe1334054975dd8554cb54cbe1330d8ffa0ce43119178d2f7ead'
+TOKEN = os.environ('TG_TOKEN')
+VK_TOKEN = os.environ('VK_TOKEN')
 DEBUG = True
 TESTING = True
 CELERY_BROKER_URL  = 'redis://localhost:6379/0'
