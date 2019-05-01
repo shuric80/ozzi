@@ -24,7 +24,7 @@ from view import *
 def webhook():
     bot.remove_webhook()
     #TODO брать с конфига
-    bot.set_webhook("https://51.89.138.160:8443/ozzi",  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
+    bot.set_webhook(f"{config.HOST}:8443/ozzi",  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
     return '!'
 
 

@@ -1,6 +1,7 @@
 * Деплой
 ** Добавить пользователь в БД.
 ** Конфиг для БД в alembic.ini
+
 * add unlimited text.
 ** split caption for image and text
 * DONE <2017-12-18 Пн> Отладить работу с cookie-redis.
