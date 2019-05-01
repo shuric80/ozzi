@@ -19,43 +19,29 @@ CELERY_BROKER_URL  = 'redis://localhost:6379/0'
 #DATABASE = 'bot.db'
 GROUPS = (
     {
-        'name':'2mambo',
-        'url':'2mamboproject',
+        'name':'«Незабываемая Москва» - экскурсии по Москве',
+        'url':'unforgettable.moscow',
     },
     {
-        'name':'salsa jem',
-        'url':'salsa_jam'
+      'name':'',
+      'url':'mospeshkom'
+    },
+     {
+      'name':'',
+      'url':'msk_stepbystep'
     },
     {
-        'name':'',
-        'url':'salsann'
+      'name':'',
+      'url':'neobichnie_ekskursii_po_moskve'
     },
     {
-        'name':'',
-        'url':'svoyashkola'
+      'name':'',
+      'url':'pomoscowe'
     },
     {
-        'name':'',
-        'url':'armenycasa'
-    },
-    {
-        'name':'',
-        'url':'maleconmoscow'
-    },
-    {
-        'name':'',
-        'url':'sensualbachatakizombanight'
-    },
-    {
-        'name':'',
-        'url':'mambo.love'
-    },
-    {
-        'name':'',
-        'url':'fair_dance'
+      'url':'bonmos',
+       'name':''
     }
-
-
 )
 
 #TODO add text for help
