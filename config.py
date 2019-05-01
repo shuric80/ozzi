@@ -13,7 +13,7 @@ WEBHOOK_URL_BASE = 'https://{!s}:{}'.format(WEBHOOK_HOST, WEBHOOK_PORT)
 #TOKEN = '246271863:AAEUJQJ7aHByov0wnHBjSUGseL1ixU1mSgk'
 TOKEN = os.environ['TG_TOKEN']
 VK_TOKEN = os.environ['VK_TOKEN']
-DEBUG = True
+DEBUG = os.environ['DEBUG']
 TESTING = True
 CELERY_BROKER_URL  = 'redis://localhost:6379/0'
 #DATABASE = 'bot.db'
@@ -23,24 +23,24 @@ GROUPS = (
         'url':'unforgettable.moscow',
     },
     {
-      'name':'',
+      'name':'sada',
       'url':'mospeshkom'
     },
      {
-      'name':'',
+      'name':'asd',
       'url':'msk_stepbystep'
     },
     {
-      'name':'',
+      'name':'asdsa',
       'url':'neobichnie_ekskursii_po_moskve'
     },
     {
-      'name':'',
+      'name':'asdsa',
       'url':'pomoscowe'
     },
     {
       'url':'bonmos',
-       'name':''
+       'name':'adas'
     }
 )
 
