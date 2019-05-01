@@ -1,5 +1,3 @@
-#!../bin/python
-#-*- coding:utf-8 -*-
 import sys
 from datetime import datetime
 import enum
@@ -66,7 +64,7 @@ class Post(Base):
     id  = Column( Integer, primary_key = True)
     tstamp = Column( DateTime, default = datetime.utcnow)
     date = Column('created', Integer, nullable = False)
-    text = Column('content', Unicode(4096))
+    text = Column('content', Unicode(10000))
     photos = Column('photo', Unicode(124), nullable = True)
 
     group_id =  Column(Integer, ForeignKey('group.id'))
