@@ -3,12 +3,12 @@ import os
 CNT = 10
 SESSION_TIME = 3600
 SECRET_COD = 'kuku'
-WEBHOOK_SSL_CERT = 'webhook_cert.pem'
-WEBHOOK_SSL_PRIV = 'webhook_pkey.pem'
+WEBHOOK_SSL_CERT = 'certs/webhook_cert.pem'
+WEBHOOK_SSL_PRIV = 'certs/webhook_pkey.pem'
 HOST = os.environ['HOST']
 PORT = 5000
 WEBHOOK_HOST = os.environ['HOST']
-WEBHOOK_PORT = 443
+WEBHOOK_PORT = 8443
 WEBHOOK_URL_BASE = 'https://{!s}:{}'.format(WEBHOOK_HOST, WEBHOOK_PORT)
 TOKEN = os.environ['TG_TOKEN']
 VK_TOKEN = os.environ['VK_TOKEN']

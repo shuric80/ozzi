@@ -14,7 +14,7 @@ app.debug = config.DEBUG
 
 celery = Celery('ozzi', broker = config.CELERY_BROKER_URL)
 
-bot = telebot.TeleBot(config.TOKEN)
+bot = telebot.TeleBot(config.TG_TOKEN)
 
 
 from view import *
@@ -24,7 +24,7 @@ from view import *
 def webhook():
     bot.remove_webhook()
     #TODO брать с конфига
-    bot.set_webhook(f"{config.HOST}:8443/ozzi",  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
+    bot.set_webhook(f"{config.HOST}:8443/ozzi",  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))    
     return '!'
 
 

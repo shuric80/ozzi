@@ -92,10 +92,16 @@ if __name__ == '__main__':
         bot.polling()
 
     elif args.cmd == 'runserver':
+        bot.remove_webhook()
+        time.sleep(0.5)
+        bot.set_webhook(url=config.WEBHOOK_URL_BASE + config.WEBHOOK_URL_PATH,
+                certificate=open(config.WEBHOOK_SSL_CERT, 'r')
+                )
         app.run(
             host = config.HOST,
             port = config.PORT,
-           debug = config.DEBUG
+            debug = config.DEBUG,
+            ssl_context = (config.WEBHOOK_SSL_CERT, config.WEBHOOK_SSL_PRIV)
         )
 
     else:
