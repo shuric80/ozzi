@@ -1,6 +1,6 @@
 #-*- coding:utf-8 -*-
 import logging
-from flask import Flask
+from flask import Flask, request
 from celery import Celery
 from datetime import timedelta
 
@@ -24,7 +24,7 @@ from view import *
 def webhook():
     bot.remove_webhook()
     #TODO брать с конфига
-    bot.set_webhook(f"{config.HOST}:8443/ozzi",  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))    
+    bot.set_webhook(f"{config.HOST}:8443/ozzi",  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
     return '!'
 
 
