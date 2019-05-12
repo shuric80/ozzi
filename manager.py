@@ -58,9 +58,6 @@ def update_posts():
 
     return r
 
-def startCelery():
-    cmd = 'celery -A manager.celery worker -B --loglevel=INFO'
-    subprocess.call(cmd, shell=False)
 
 def add_groups():
     ##

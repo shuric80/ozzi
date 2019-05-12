@@ -18,8 +18,6 @@ bot = telebot.TeleBot(config.TOKEN)
 
 
 from view import *
-startCelery()
-
 
 @app.route('/', methods=['GET', 'HEAD'])
 def webhook():
