@@ -8,7 +8,7 @@ import config
 
 
 logger = telebot.logger
-LEVEL = logging.DEBUG if config.DEBUG else logging.INFO
+LEVEL = logging.DEBUG if config.DEBUG==True else logging.INFO
 telebot.logger.setLevel(LEVEL)
 
 file_log = ph.join('log','ozzi_bot.log')
