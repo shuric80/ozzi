@@ -24,7 +24,7 @@ from view import *
 def webhook():
     bot.remove_webhook()
     #TODO брать с конфига
-    bot.set_webhook(f'{config.WEBHOOK_BASE_URL}/{config.WEBHOOK_URL_PATH}'),  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
+    bot.set_webhook(f'{config.WEBHOOK_URL_BASE}/{config.WEBHOOK_URL_PATH}',  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
     return '!'
 
 
