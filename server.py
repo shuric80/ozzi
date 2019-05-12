@@ -14,21 +14,21 @@ app.debug = config.DEBUG
 
 celery = Celery('ozzi', broker = config.CELERY_BROKER_URL)
 
-bot = telebot.TeleBot(config.TG_TOKEN)
+bot = telebot.TeleBot(config.TOKEN)
 
 
 from view import *
 
 
-@app.route('/ozzi', methods=['GET', 'HEAD'])
+@app.route(f'/{config.WEBHOOK_URL_PATH}', methods=['GET', 'HEAD'])
 def webhook():
     bot.remove_webhook()
     #TODO брать с конфига
-    bot.set_webhook(f"{config.HOST}:8443/ozzi",  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
+    bot.set_webhook(f'{config.WEBHOOK_BASE_URL}/{config.WEBHOOK_URL_PATH}'),  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
     return '!'
 
 
-@app.route('/ozzi', methods=['POST'])
+@app.route(f'/{config.WEBHOOK_URL_PATH}', methods=['POST'])
 def send_message():
     logger.info('WEBHOOK: HEADERS:{}  BODY:{}'.format(request.headers, request.data))
 

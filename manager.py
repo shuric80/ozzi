@@ -8,6 +8,7 @@ import shortuuid
 from celery import Celery
 from celery.schedules import crontab
 from datetime import timedelta
+import time
 
 import config
 import db
@@ -98,10 +99,10 @@ if __name__ == '__main__':
                 certificate=open(config.WEBHOOK_SSL_CERT, 'r')
                 )
         app.run(
-            host = config.HOST,
-            port = config.PORT,
+            host = config.LOCAL_HOST,
+            port = config.LOCAL_PORT,
             debug = config.DEBUG,
-            ssl_context = (config.WEBHOOK_SSL_CERT, config.WEBHOOK_SSL_PRIV)
+            #ssl_context = (config.WEBHOOK_SSL_CERT, config.WEBHOOK_SSL_PRIV)
         )
 
     else:
