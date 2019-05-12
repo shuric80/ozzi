@@ -9,6 +9,7 @@ from celery import Celery
 from celery.schedules import crontab
 from datetime import timedelta
 import time
+import subprocess
 
 import config
 import db
@@ -57,6 +58,9 @@ def update_posts():
 
     return r
 
+def startCelery():
+    cmd = 'celery -A manager.celery worker -B --loglevel=INFO'
+    subprocess.call(cmd, shell=False)
 
 def add_groups():
     ##
