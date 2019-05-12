@@ -20,15 +20,15 @@ bot = telebot.TeleBot(config.TOKEN)
 from view import *
 
 
-@app.route(f'/{config.WEBHOOK_URL_PATH}', methods=['GET', 'HEAD'])
+@app.route('/', methods=['GET', 'HEAD'])
 def webhook():
     bot.remove_webhook()
     #TODO брать с конфига
-    bot.set_webhook(f'{config.WEBHOOK_URL_BASE}/{config.WEBHOOK_URL_PATH}',  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
+    bot.set_webhook('/'.join([config.WEBHOOK_URL_BASE, config.WEBHOOK_URL_EXT]),  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
     return '!'
 
 
-@app.route(f'/{config.WEBHOOK_URL_PATH}', methods=['POST'])
+@app.route('/', methods=['POST'])
 def send_message():
     logger.info('WEBHOOK: HEADERS:{}  BODY:{}'.format(request.headers, request.data))
 

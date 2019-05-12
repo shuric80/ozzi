@@ -95,14 +95,13 @@ if __name__ == '__main__':
     elif args.cmd == 'runserver':
         bot.remove_webhook()
         time.sleep(0.5)
-        bot.set_webhook(url=config.WEBHOOK_URL_BASE + config.WEBHOOK_URL_PATH,
+        bot.set_webhook(url='/'.join([config.WEBHOOK_URL_BASE, config.WEBHOOK_URL_EXT]),
                 certificate=open(config.WEBHOOK_SSL_CERT, 'r')
                 )
         app.run(
             host = config.LOCAL_HOST,
             port = config.LOCAL_PORT,
             debug = config.DEBUG,
-            #ssl_context = (config.WEBHOOK_SSL_CERT, config.WEBHOOK_SSL_PRIV)
         )
 
     else:
