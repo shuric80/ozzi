@@ -32,9 +32,10 @@ def keyboard_list_groups(q, id):
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     l_btns = list()
     for btn in q:
-        name = getattr(btn, 'name', 'Noname')
+        name = getattr(btn, 'name')
         callable_button = types.InlineKeyboardButton(
-            text = name[:30], callback_data= json.dumps(dict(id = id, button=btn.id)))
+            text = name.split(' ')[0] if name else 'Noname',
+            callback_data= json.dumps(dict(id = id, button=btn.id)))
         l_btns.append(callable_button)
 
     keyboard.add(*l_btns)
