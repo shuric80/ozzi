@@ -6,7 +6,7 @@ from telebot import types
 from log import logger
 
 def keyboard_menu_settings(d_input):
-    keyboard = types.InlineKeyboardMarkup(row_width =1)
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
     button = types.InlineKeyboardButton(text = 'Choose groups', callback_data = json.dumps(dict(id = d_input['id'])))
     keyboard.add(button)
     return keyboard
