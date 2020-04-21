@@ -3,8 +3,8 @@
 import unittest
 from session import UserSessionRedis
 
-class TestServerRedis(unittest.TestCase):
 
+class TestServerRedis(unittest.TestCase):
     """ test session redis
         """
     def setUp(self):
@@ -12,7 +12,7 @@ class TestServerRedis(unittest.TestCase):
         self.r.initialize()
 
     def test_set_connection(self):
-        self.assertEqual(self.r.connection.set('PING','PONG'), True)
+        self.assertEqual(self.r.connection.set('PING', 'PONG'), True)
 
     def test_get_connection(self):
         self.assertEqual(self.r.connection.get('PING'), b'PONG')

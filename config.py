@@ -14,34 +14,27 @@ TOKEN = os.environ['OZZI_TG_TOKEN']
 VK_TOKEN = os.environ['OZZI_VK_TOKEN']
 DEBUG = os.environ['OZZI_DEBUG']
 TESTING = False
-CELERY_BROKER_URL  = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
 #DATABASE = 'bot.db'
-GROUPS = (
-    {
-        'name':'«Незабываемая Москва» - экскурсии по Москве',
-        'url':'unforgettable.moscow',
-    },
-    {
-      'name':'sada',
-      'url':'mospeshkom'
-    },
-     {
-      'name':'asd',
-      'url':'msk_stepbystep'
-    },
-    {
-      'name':'asdsa',
-      'url':'neobichnie_ekskursii_po_moskve'
-    },
-    {
-      'name':'asdsa',
-      'url':'pomoscowe'
-    },
-    {
-      'url':'bonmos',
-       'name':'adas'
-    }
-)
+GROUPS = ({
+    'name': '«Незабываемая Москва» - экскурсии по Москве',
+    'url': 'unforgettable.moscow',
+}, {
+    'name': 'sada',
+    'url': 'mospeshkom'
+}, {
+    'name': 'asd',
+    'url': 'msk_stepbystep'
+}, {
+    'name': 'asdsa',
+    'url': 'neobichnie_ekskursii_po_moskve'
+}, {
+    'name': 'asdsa',
+    'url': 'pomoscowe'
+}, {
+    'url': 'bonmos',
+    'name': 'adas'
+})
 
 #TODO add text for help
 HELP = """

@@ -16,8 +16,6 @@ import db
 from parser import read_vk_content
 from log import logger
 from server import bot, celery, app
-
-
 """
    Use alembic for generate database.
    > alembic init migrate
@@ -35,18 +33,18 @@ from server import bot, celery, app
     > alembic revision --autogenerate -m  'initial'
     > alembic upgrade head
         """
-celery = Celery('ozzi', broker = config.CELERY_BROKER_URL)
+celery = Celery('ozzi', broker=config.CELERY_BROKER_URL)
 
 celery.conf.beat_schedule = {
-	# executes every night at 4:15
-	'every-day': {
-		'task': 'user.checkaccounts',
-		'schedule': crontab(minute='*/30', hour='7-22')
-	}
+    # executes every night at 4:15
+    'every-day': {
+        'task': 'user.checkaccounts',
+        'schedule': crontab(minute='*/30', hour='7-22')
+    }
 }
 
 
-@celery.task(name = 'user.checkaccounts')
+@celery.task(name='user.checkaccounts')
 def update_posts():
     logger.info('UPDATE POSTS')
     groups = db.get_all_group()
@@ -65,9 +63,14 @@ def add_groups():
     r = db.add_groups(config.GROUPS)
     return r
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Initialize database')
-    parser.add_argument('cmd', choices=['update','addgroup','migrate','upgrade','runbot','runserver'])
+    parser.add_argument('cmd',
+                        choices=[
+                            'update', 'addgroup', 'migrate', 'upgrade',
+                            'runbot', 'runserver'
+                        ])
     args = parser.parse_args()
 
     logger.info('start manager')
@@ -82,12 +85,13 @@ if __name__ == '__main__':
         r = add_groups()
 
     elif args.cmd == 'migrate':
-         ## migrate db
-         os.system('alembic revision --autogenerate -m "{}"'.format(shortuuid.uuid()))
+        ## migrate db
+        os.system('alembic revision --autogenerate -m "{}"'.format(
+            shortuuid.uuid()))
 
     elif args.cmd == 'upgrade':
-         ## update tables database
-         os.system('alembic upgrade head')
+        ## update tables database
+        os.system('alembic upgrade head')
 
     elif args.cmd == 'runbot':
         ## run bot
@@ -96,16 +100,16 @@ if __name__ == '__main__':
     elif args.cmd == 'runserver':
         bot.remove_webhook()
         time.sleep(0.5)
-        bot.set_webhook(url='/'.join([config.WEBHOOK_URL_BASE, config.WEBHOOK_URL_EXT]),
-                certificate=open(config.WEBHOOK_SSL_CERT, 'r')
-                )
+        bot.set_webhook(url='/'.join(
+            [config.WEBHOOK_URL_BASE, config.WEBHOOK_URL_EXT]),
+                        certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
         app.run(
-            host = config.LOCAL_HOST,
-            port = config.LOCAL_PORT,
-            debug = config.DEBUG,
+            host=config.LOCAL_HOST,
+            port=config.LOCAL_PORT,
+            debug=config.DEBUG,
         )
 
     else:
         pass
 
-    logger.info('Update is {}'.format(['fail','done'][r]))
+    logger.info('Update is {}'.format(['fail', 'done'][r]))

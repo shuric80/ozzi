@@ -12,7 +12,7 @@ from log import logger
 from base import engine, config
 from config import GROUPS
 
-session_factory = sessionmaker(bind = engine)
+session_factory = sessionmaker(bind=engine)
 session = scoped_session(session_factory)
 
 
@@ -42,8 +42,8 @@ def update_users_group(user, l_groups):
     try:
         session.commit()
     except exc.SQLAlchemyError as e:
-          logger.error(e)
-          session.rollback()
+        logger.error(e)
+        session.rollback()
     finally:
         pass
 
@@ -60,13 +60,13 @@ def get_all_group():
     return q
 
 
-def get_last_posts(user_id, cnt = 5):
+def get_last_posts(user_id, cnt=5):
     ## return last post for time
     cnt = cnt if 0 < cnt < 10 else 5
     user = get_user(user_id)
     q = None
     if user:
-        user_groups = [ g.id for g in user.groups]
+        user_groups = [g.id for g in user.groups]
         q = session.query(Post).join(Group).filter(Group.id.in_(user_groups)) \
                                                .order_by(Post.date.desc()).limit(cnt)
     else:
@@ -86,7 +86,9 @@ def update_db(group, d_input):
     ## input -> name and dict text(str), photo(list), date(int)
 
     for post in d_input:
-        if session.query(Post).join(Group).filter(Post.date == post['date']).filter(Group.id == group.id).count() == 0:
+        if session.query(Post).join(Group).filter(
+                Post.date == post['date']).filter(
+                    Group.id == group.id).count() == 0:
             post_db = Post()
             post_db.text = post['text']
             post_db.photos = post['photo'][0] if post['photo'] else None
@@ -102,9 +104,9 @@ def update_db(group, d_input):
     try:
         session.commit()
     except exc.SQLAlchemyError as e:
-          logger.error(e)
-          session.rollback()
-          status = False
+        logger.error(e)
+        session.rollback()
+        status = False
     finally:
         #session.close()
         pass
@@ -112,9 +114,10 @@ def update_db(group, d_input):
     return status
 
 
-def get_post_from_group(group_id, num = 0):
+def get_post_from_group(group_id, num=0):
     ## for group.id return post with offset num
-    post = session.query(Post).join(Post.group).filter(Group.id== group_id)[num]
+    post = session.query(Post).join(
+        Post.group).filter(Group.id == group_id)[num]
     return post
 
 
@@ -126,21 +129,21 @@ def add_groups(l_input):
     for group in l_input:
         if group['url'] not in l_name_groups:
             db_group = Group()
-            db_group.name = group['name'] if group['name']  else None
+            db_group.name = group['name'] if group['name'] else None
             db_group.url = group['url']
             session.add(db_group)
 
     status = True
     try:
-       session.commit()
-       logger.info('Commited.')
+        session.commit()
+        logger.info('Commited.')
     except exc.SQLAlchemyError as e:
-       session.rollback()
-       logger.error('Database rollback.{}'.format(e))
-       status = False
+        session.rollback()
+        logger.error('Database rollback.{}'.format(e))
+        status = False
     finally:
-       #session.close()
-       logger.info('Database close')
+        #session.close()
+        logger.info('Database close')
 
     return status
 
@@ -158,11 +161,11 @@ def update_description_group(group, d_input):
 
     status = True
     try:
-         session.commit()
+        session.commit()
     except exc.SQLAlchemyError as e:
-         logger.error(e)
-         session.rollback()
-         status = False
+        logger.error(e)
+        session.rollback()
+        status = False
     finally:
         #session.close()
         pass

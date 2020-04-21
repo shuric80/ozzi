@@ -10,35 +10,38 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy import UniqueConstraint
 from base import Base
 
+association_table_post_tag = Table(
+    'association_post_tag', Base.metadata,
+    Column('post_id', Integer, ForeignKey('post.id')),
+    Column('tag_id', Integer, ForeignKey('tag.id')))
 
-association_table_post_tag = Table('association_post_tag', Base.metadata,
-                          Column('post_id', Integer, ForeignKey('post.id')),
-                          Column('tag_id', Integer, ForeignKey('tag.id')))
+association_table_tag_user = Table(
+    'association_tag_user', Base.metadata,
+    Column('user_id', Integer, ForeignKey('user.id')),
+    Column('tag_id', Integer, ForeignKey('tag.id')))
 
-
-association_table_tag_user = Table('association_tag_user', Base.metadata,
-                          Column('user_id', Integer, ForeignKey('user.id')),
-                          Column('tag_id', Integer, ForeignKey('tag.id')))
-
-association_table_group_user = Table('association_group_user', Base.metadata,
-                          Column('user_id', Integer, ForeignKey('user.id')),
-                          Column('group_id', Integer, ForeignKey('group.id')))
+association_table_group_user = Table(
+    'association_group_user', Base.metadata,
+    Column('user_id', Integer, ForeignKey('user.id')),
+    Column('group_id', Integer, ForeignKey('group.id')))
 
 
 class Group(Base):
 
     __tablename__ = 'group'
 
-    id = Column( Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column('name', Unicode(80))
     description = Column('description', Unicode(4000))
     photo = Column('photo_logo', Unicode(80))
     email = Column('email', Unicode(62))
     phone = Column('phone', Unicode(24))
-    url = Column( Unicode(120), nullable=True, unique=True)
+    url = Column(Unicode(120), nullable=True, unique=True)
 
-    posts = relationship('Post', backref= backref('group', lazy = 'joined'))
-    users = relationship('User', secondary=association_table_group_user, back_populates='groups')
+    posts = relationship('Post', backref=backref('group', lazy='joined'))
+    users = relationship('User',
+                         secondary=association_table_group_user,
+                         back_populates='groups')
 
     def __repr__(self):
         return '<Group:{}>'.format(self.name)
@@ -51,7 +54,9 @@ class Tag(Base):
     id = Column(Integer, primary_key=True)
     name = Column('Tag', Unicode(128), unique=True)
 
-    posts = relationship('Post', secondary=association_table_post_tag, back_populates ='tags')
+    posts = relationship('Post',
+                         secondary=association_table_post_tag,
+                         back_populates='tags')
 
     def __repr__(self):
         return '<Tag:{}>'.format(self.name)
@@ -61,14 +66,16 @@ class Post(Base):
 
     __tablename__ = 'post'
 
-    id  = Column( Integer, primary_key = True)
-    tstamp = Column( DateTime, default = datetime.utcnow)
-    date = Column('created', Integer, nullable = False)
+    id = Column(Integer, primary_key=True)
+    tstamp = Column(DateTime, default=datetime.utcnow)
+    date = Column('created', Integer, nullable=False)
     text = Column('content', Unicode(10000))
-    photos = Column('photo', Unicode(124), nullable = True)
+    photos = Column('photo', Unicode(124), nullable=True)
 
-    group_id =  Column(Integer, ForeignKey('group.id'))
-    tags = relationship('Tag', secondary = association_table_post_tag, back_populates='posts')
+    group_id = Column(Integer, ForeignKey('group.id'))
+    tags = relationship('Tag',
+                        secondary=association_table_post_tag,
+                        back_populates='posts')
 
 
 class DateTime(Base):
@@ -84,11 +91,13 @@ class User(Base):
     #message_chat_id = Column(Integer, primary_key = True)
 
     first_name = Column('first name', Unicode(128))
-    last_name = Column('last name',  Unicode(128))
+    last_name = Column('last name', Unicode(128))
     username = Column('username', Unicode(128))
 
     real_name = Column('Name', Unicode(128))
     #is_type = Column(Enum(UserEnum))
 
     #dates = Column(Integer, ForeignKey('datetime.id'))
-    groups = relationship('Group', secondary = association_table_group_user, back_populates='users')
+    groups = relationship('Group',
+                          secondary=association_table_group_user,
+                          back_populates='users')

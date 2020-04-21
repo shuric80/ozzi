@@ -8,28 +8,30 @@ import telebot
 import config
 from log import logger
 
-
 app = Flask(__name__)
 app.debug = config.DEBUG
 
-celery = Celery('ozzi', broker = config.CELERY_BROKER_URL)
+celery = Celery('ozzi', broker=config.CELERY_BROKER_URL)
 
 bot = telebot.TeleBot(config.TOKEN)
 
-
 from view import *
+
 
 @app.route('/', methods=['GET', 'HEAD'])
 def webhook():
     bot.remove_webhook()
     #TODO брать с конфига
-    bot.set_webhook('/'.join([config.WEBHOOK_URL_BASE, config.WEBHOOK_URL_EXT]),  certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
+    bot.set_webhook('/'.join([config.WEBHOOK_URL_BASE,
+                              config.WEBHOOK_URL_EXT]),
+                    certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
     return '!'
 
 
 @app.route('/', methods=['POST'])
 def send_message():
-    logger.info('WEBHOOK: HEADERS:{}  BODY:{}'.format(request.headers, request.data))
+    logger.info('WEBHOOK: HEADERS:{}  BODY:{}'.format(request.headers,
+                                                      request.data))
 
     if request.headers.get('content-type') == 'application/json':
         json_string = request.get_data().decode('utf-8')
