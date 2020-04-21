@@ -1,9 +1,10 @@
 #-*- coding:utf-8 -*-
 
-import time
 import json
-from telebot import types
+import time
+
 from log import logger
+from telebot import types
 
 
 def keyboard_menu_settings(d_input):

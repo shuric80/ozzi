@@ -1,9 +1,10 @@
 #-*- coding:utf-8 -*-
-import shortuuid
 import json
-import redis
-from log import logger
+
 import config
+import redis
+import shortuuid
+from log import logger
 
 
 class UserSessionRedis:

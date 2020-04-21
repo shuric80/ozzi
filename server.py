@@ -1,12 +1,14 @@
 #-*- coding:utf-8 -*-
 import logging
-from flask import Flask, request
-from celery import Celery
 from datetime import timedelta
 
-import telebot
+from flask import Flask, request
+
 import config
+import telebot
+from celery import Celery
 from log import logger
+from view import *
 
 app = Flask(__name__)
 app.debug = config.DEBUG
@@ -15,7 +17,6 @@ celery = Celery('ozzi', broker=config.CELERY_BROKER_URL)
 
 bot = telebot.TeleBot(config.TOKEN)
 
-from view import *
 
 
 @app.route('/', methods=['GET', 'HEAD'])

@@ -1,13 +1,11 @@
+import enum
 import sys
 from datetime import datetime
-import enum
 
-from sqlalchemy import Table, Column, \
-    Integer,Unicode, DateTime, Enum
+from sqlalchemy import (Column, DateTime, Enum, ForeignKey, Integer, Table,
+                        Unicode, UniqueConstraint)
+from sqlalchemy.orm import backref, relationship
 
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship, backref
-from sqlalchemy import UniqueConstraint
 from base import Base
 
 association_table_post_tag = Table(

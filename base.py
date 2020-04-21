@@ -1,8 +1,9 @@
 #-*- coding:utf-8 -*-
 
-from configobj import ConfigObj
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+
+from configobj import ConfigObj
 
 Base = declarative_base()
 

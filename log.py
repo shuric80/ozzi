@@ -1,9 +1,10 @@
 #-*- coding:utf-8 -*-
-import os.path as ph
 import logging
+import os.path as ph
 from logging.handlers import RotatingFileHandler
-import telebot
+
 import config
+import telebot
 
 logger = telebot.logger
 LEVEL = logging.DEBUG if config.DEBUG == True else logging.INFO

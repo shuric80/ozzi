@@ -1,10 +1,11 @@
-import requests
 import ast
+import json
 import re
 import sys
-import config
 
-import json
+import requests
+
+import config
 
 URL = 'https://api.vk.com/method/wall.get'
 TOKEN = config.VK_TOKEN

@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import os
+
 CNT = 10
 SESSION_TIME = 3600
 SECRET_COD = 'kuku'

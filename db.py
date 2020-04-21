@@ -1,16 +1,15 @@
 #-*- coding:utf-8 -*-
 #from view import logger
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy import create_engine, exc
+from sqlalchemy.orm import scoped_session, sessionmaker
 
-from sqlalchemy import exc
-from sqlalchemy import create_engine
-from models import Post, Group, User
-
+from base import config, engine
+from config import GROUPS
 from log import logger
+from models import Group, Post, User
+
 #from configobj import ConfigObj
 
-from base import engine, config
-from config import GROUPS
 
 session_factory = sessionmaker(bind=engine)
 session = scoped_session(session_factory)

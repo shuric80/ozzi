@@ -1,21 +1,22 @@
 #!/env/bin/python
 #-*- coding:utf-8 -*-
 
-import os
-import sys
 import argparse
-import shortuuid
-from celery import Celery
-from celery.schedules import crontab
-from datetime import timedelta
-import time
+import os
 import subprocess
+import sys
+import time
+from datetime import timedelta
+from parser import read_vk_content
 
 import config
 import db
-from parser import read_vk_content
+import shortuuid
+from celery import Celery
+from celery.schedules import crontab
 from log import logger
-from server import bot, celery, app
+from server import app, bot, celery
+
 """
    Use alembic for generate database.
    > alembic init migrate
